@@ -9,4 +9,9 @@ dependencies = [
     "langchain-community>=0.3.24",
     "langchain-core>=0.3.61",
     "langgraph>=0.4.7",
+    "fastapi>=0.104.1",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.5.0",
+    "python-multipart>=0.0.6",
+    "requests>=2.31.0",
 ]
