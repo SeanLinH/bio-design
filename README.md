@@ -1,117 +1,68 @@
-# Biodesign 醫療器材創新設計方法學
+# Biodesign Methodology with LLM Agent
 
-> 一套源自史丹福大學的結構化醫療創新方法，將創新從靈感發想轉變為系統性的問題解決過程
+> A Stanford University methodology for systematic medical device innovation, enhanced with LLM agent implementation
 
-## 🎯 專案目標
+## 🎯 Project Goal
 
-本專案旨在整理和分享Biodesign創新方法學的核心概念、實作工具和學習資源，幫助醫療創新者建立系統性的創新思維和實作能力。
+This project aims to implement the Biodesign Methodology using LLM (Large Language Model) agents to systematize and enhance the medical device innovation process.
 
-## 📚 什麼是Biodesign？
+## 📚 What is Biodesign?
 
-Biodesign是史丹福大學開發的醫療器材創新設計方法學，其核心理念是：
+Biodesign is a systematic approach to medical device innovation developed by Stanford University. The methodology consists of three core phases:
 
-- **以病人需求為中心**：從醫療現場的實際需求出發，而非技術驅動
-- **結構化創新過程**：將創新轉化為可學習、可重複的系統性方法
-- **跨領域整合**：結合醫學、工程、商業等多重專業視角
+### 1. Identify 🔍
+This phase focuses on discovering significant unmet healthcare needs through:
+- Clinical environment immersion
+- Observation of complete care cycles (diagnosis → treatment → recovery → billing)
+- Problem and opportunity identification
+- Need gathering and prioritization based on potential impact
 
-## 🔄 六步驟創新流程
+### 2. Invent 💡
+During this phase, teams:
+- Brainstorm diverse solution concepts
+- Create and test rapid prototypes
+- Implement "think-build-rethink" iteration cycles
+- Evaluate concepts for:
+  - Technical feasibility
+  - Intellectual property potential
+  - Business model viability
+  - Regulatory pathway considerations
 
-```
-需求識別 → 需求篩選 → 概念產生 → 概念篩選 → 策略發展 → 實作規劃 ↓           ↓           ↓           ↓           ↓           ↓ 觀察痛點   評估機會   創意發想   可行性評估   商業模式   執行計畫
-```
+### 3. Implement 🚀
+The final phase involves:
+- Technology refinement
+- Development of regulatory approval strategies
+- Reimbursement planning
+- Market potential assessment
+- Funding source exploration
+- Collaboration with industry mentors
 
-### 1. 需求識別 (Need Finding)
-- 臨床觀察與訪談
-- 痛點發掘與分析
-- 利害關係人映射
-
-### 2. 需求篩選 (Need Screening)
-- 市場規模評估
-- 技術可行性分析
-- 法規環境考量
-
-### 3. 概念產生 (Concept Generation)
-- 頭腦風暴工作坊
-- 設計思維方法
-- 跨領域協作
-
-### 4. 概念篩選 (Concept Screening)
-- 原型製作與測試
-- 使用者回饋收集
-- 技術驗證
-
-### 5. 策略發展 (Strategy Development)
-- 商業模式設計
-- 智財策略規劃
-- 法規路徑分析
-
-### 6. 實作規劃 (Implementation Planning)
-- 資源需求評估
-- 時程規劃
-- 風險管理
-
-## 🛠️ 工具與資源
-
-### 核心工具
-- [ ] 需求識別工作表
-- [ ] 概念評估矩陣
-- [ ] 商業模式畫布
-- [ ] 原型設計指南
-- [ ] 法規檢核清單
-
-### 學習資源
-- [ ] 案例研究集
-- [ ] 工作坊簡報模板
-- [ ] 評估指標框架
-- [ ] 最佳實務指南
-
-## 🌏 全球發展現況
-
-- **創立時間**：2001年於史丹福大學
-- **全球據點**：18個國家設有課程
-- **創業成果**：56家新創公司成立
-- **影響範圍**：超過940萬名患者受益
-
-### 台灣發展
-- **成功大學**：2012年起推動，培育近500位人才
-- **台灣大學**：2021年開設首期課程
-- **台北醫學大學**：2021年成立Biodesign中心
-- **中山醫學大學**：2024年與台大合作開課
-
-## 🚀 快速開始
-
-1. **環境準備**
+## 🛠️ Project Structure
 
 ```
-git clone https://github.com/your-username/biodesign-methodology.git
-cd biodesign-methodology
+project/
+├── src/
+│   └── agent/         # LLM Agent implementation
+├── docs/              # Documentation
+├── tests/             # Test files
+└── README.md          # Project documentation
 ```
 
+## 🚀 Getting Started
 
-2. **學習路徑**
-- 閱讀核心概念文件
-- 參與工作坊練習
-- 實作小型專案
-- 加入社群討論
+1. Clone the repository
+2. Create virtual environment
+3. Install dependencies
+4. [Additional setup instructions to be added]
 
-3. **實作專案**
-- 選擇醫療痛點
-- 應用六步驟流程
-- 記錄學習心得
-- 分享成果經驗
+## 📄 License
 
-## 📖 文件結構
+[License information to be added]
 
-```
-├── docs/                 # 核心文件 │   ├── methodology/      # 方法學說明 │   ├── tools/           # 實作工具 │   └── case-studies/    # 案例研究 ├── templates/           # 工作表模板 ├── workshops/          # 工作坊資料 └── examples/           # 實作範例
-```
+## 🤝 Contributing
 
-## 🤝 貢獻指南
+[Contribution guidelines to be added]
 
-歡迎各界專家學者貢獻知識和經驗：
+## 📬 Contact
 
-1. Fork 本專案
-2. 建立功能分支 (`git checkout -b feature/amazing-tool`)
-3. 提交變更 (`git commit -m 'Add amazing tool'`)
-4. 推送分支 (`git push origin feature/amazing-tool`)
-5. 開啟 Pull Request
+[Contact information to be added] 
