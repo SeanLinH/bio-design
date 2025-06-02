@@ -1,6 +1,7 @@
-from typing import List, Literal, Sequence, TypedDict, Dict, Any
+from typing import List, Literal, Sequence, TypedDict, Dict, Any, Callable, Optional
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END, START
 from langgraph.types import Command
@@ -9,6 +10,9 @@ from IPython.display import Image, display
 from PIL import Image as PILImage
 from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
+import json
+import time
+
 
 # 定義需求項目的結構
 class NeedItem(BaseModel):
@@ -31,16 +35,29 @@ class ReflectionState(TypedDict):
     max_rounds: int
     final_summary: str
 
+# 定義狀態更新回調類型
+StatusCallback = Callable[[str, str, Dict[str, Any]], None]
+
 # 初始化 LLM
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+llm = ChatOpenAI(
+    model="gpt-4.1-mini", 
+    temperature=0.7)
 
 class MedicalReflectionSystem:
-    def __init__(self, max_discussion_rounds: int = 3):
+    def __init__(self, max_discussion_rounds: int = 5, status_callback: Optional[StatusCallback] = None):
         self.max_rounds = max_discussion_rounds
+        self.status_callback = status_callback
         self.graph = self._build_graph()
+        self.checkpointer = MemorySaver()
+        
         # 初始化 parser
         self.parser = PydanticOutputParser(pydantic_object=NeedsOutput)
     
+    def _emit_status(self, event_type: str, agent: str, data: Dict[str, Any]):
+        """發送狀態更新"""
+        if self.status_callback:
+            self.status_callback(event_type, agent, data)
+
     def _build_graph(self):
         """建立 LangGraph 工作流程"""
         builder = StateGraph(ReflectionState)
@@ -79,10 +96,37 @@ class MedicalReflectionSystem:
         builder.add_edge("collector", END)
 
         
-        return builder.compile()
+        return builder.compile(checkpointer=self.checkpointer)
+    
+    def get_current_state(self, thread_id: str = "default"):
+        """獲取當前 graph 狀態"""
+        config = {"configurable": {"thread_id": thread_id}}
+        return self.graph.get_state(config)
+    
+    def get_discussion_progress(self, thread_id: str = "default"):
+        """獲取討論進度和內容"""
+        state = self.get_current_state(thread_id)
+        
+        if state and state.values:
+            return {
+                "current_round": state.values.get("discussion_round", 0),
+                "max_rounds": state.values.get("max_rounds", self.max_rounds),
+                "medical_insights": state.values.get("medical_insights", []),
+                "engineering_insights": state.values.get("engineering_insights", []),
+                "messages": state.values.get("messages", []),
+                "final_summary": state.values.get("final_summary", "")
+            }
+        return None
+
     
     def medical_staff_node(self, state: ReflectionState) -> ReflectionState:
         """醫療專家 Agent"""
+        # 發送思考開始狀態
+        self._emit_status("thinking_started", "medical_expert", {
+            "round": state["discussion_round"] + 1,
+            "message": "醫療專家正在分析醫療需求和流程問題..."
+        })
+        
         medical_prompt = ChatPromptTemplate.from_messages([
             ("system", """你是一位資深的醫療專家，專精於醫療系統管理和資源配置。
             你正在與工程師討論醫療資源壅塞的問題。請從醫療專業角度分析問題，
@@ -98,11 +142,18 @@ class MedicalReflectionSystem:
         
         chain = medical_prompt | llm
         response = chain.invoke({"messages": state["messages"]})
-        print("\n==========medical==========\n ",response.content)
+        print("\n==========medical think... ==========\n ",response.content)
         
         # 更新狀態
         new_messages = state["messages"] + [response]
         medical_insights = state["medical_insights"] + [response.content]
+        
+        # 發送思考完成狀態
+        self._emit_status("thinking_completed", "medical_expert", {
+            "round": state["discussion_round"] + 1,
+            "response": response.content,
+            "insight_count": len(medical_insights)
+        })
         
         return {
             **state,
@@ -113,6 +164,12 @@ class MedicalReflectionSystem:
     
     def engineer_node(self, state: ReflectionState) -> ReflectionState:
         """工程師 Agent"""
+        # 發送思考開始狀態
+        self._emit_status("thinking_started", "engineer", {
+            "round": state["discussion_round"] + 1,
+            "message": "工程師正在分析技術解決方案和系統優化..."
+        })
+        
         engineer_prompt = ChatPromptTemplate.from_messages([
             ("system", """你是一位資深的系統工程師，專精於醫療資訊系統、流程優化和技術解決方案。
             你正在與醫療專家討論醫療資源壅塞的問題。請從技術和系統角度分析問題，
@@ -128,10 +185,18 @@ class MedicalReflectionSystem:
         
         chain = engineer_prompt | llm
         response = chain.invoke({"messages": state["messages"]})
-        print("\n==========engineer==========\n ",response.content)
+        print("\n==========engineer think... ==========\n ",response.content)
+        
         # 更新狀態
         new_messages = state["messages"] + [response]
         engineering_insights = state["engineering_insights"] + [response.content]
+        
+        # 發送思考完成狀態
+        self._emit_status("thinking_completed", "engineer", {
+            "round": state["discussion_round"] + 1,
+            "response": response.content,
+            "insight_count": len(engineering_insights)
+        })
         
         return {
             **state,
@@ -182,7 +247,6 @@ class MedicalReflectionSystem:
         
         try:
             response = chain.invoke({})
-            print("\n==========collector==========\n", response)
             
             # 將解析後的結果轉換為字符串以便存儲
             parsed_output = response.model_dump()
@@ -219,18 +283,40 @@ class MedicalReflectionSystem:
         # 檢查最後一條訊息來決定下一個 agent
         last_message = state["messages"][-1] if state["messages"] else None
         
-        if last_message:
+        if last_message and isinstance(last_message, AIMessage):
             # 根據最後一條訊息的來源決定下一個 agent
-            if isinstance(last_message, AIMessage):
-                if "醫療" in last_message.content or "medical" in str(type(last_message)).lower():
-                    return "engineer_agent"
+            judge_prompt = ChatPromptTemplate.from_messages([
+                ("system", """你是一個討論主題判斷器。請分析最近的對話內容，判斷討論的重點是偏向醫療專業領域還是技術工程領域。
+
+                判斷標準：
+                - 如果討論重點是醫療流程、臨床經驗、病患照護、醫療政策等，回答 "medical"
+                - 如果討論重點是技術解決方案、系統架構、軟體開發、數據分析等，回答 "engineering"
+                
+                請只回答 "medical" 或 "engineering"，不要添加其他文字。"""),
+                ("human", f"最近的對話內容：\n{last_message.content}")
+            ])
+            
+            chain = judge_prompt | llm
+            try:
+                judgment = chain.invoke({}).content.strip().lower()
+                print(f"\n==========topic judgment==========\n{judgment}")
+                
+                # 根據判斷結果決定下一個 agent
+                if "medical" in judgment:
+                    return "engineer_agent"  # 如果當前是醫療主題，下一個應該是工程師
+                elif "engineering" in judgment:
+                    return "medical"  # 如果當前是工程主題，下一個應該是醫療專家
                 else:
-                    return "medical"
-            else:
-                # 如果是人類訊息，預設從醫療專家開始
-                return "medical"
-        
-        return "medical"  # 預設從醫療專家開始
+                    # 如果判斷不明確，預設交替進行
+                    return "engineer_agent" if current_round % 2 == 0 else "medical"
+            except Exception as e:
+                print(f"判斷錯誤: {e}")
+                # 如果 LLM 判斷失敗，回到簡單的交替邏輯
+                return "engineer_agent" if current_round % 2 == 0 else "medical"
+        else:
+            # 如果是人類訊息，預設從醫療專家開始
+            return "medical"
+            
     
     async def run_reflection(self, user_query: str) -> dict:
         """執行完整的 reflection 流程"""
@@ -245,6 +331,7 @@ class MedicalReflectionSystem:
         
         # 執行工作流程
         result = await self.graph.ainvoke(initial_state)
+        
         
         # 嘗試解析最終結果
         try:
@@ -344,7 +431,8 @@ def run_reflection_sync(user_query: str, max_rounds: int = 3) -> dict:
     
     # 同步執行
     result = reflection_system.graph.invoke(initial_state)
-    
+    # print("\n==========final result==========\n", result)
+
     # 嘗試解析最終結果
     try:
         import ast
@@ -364,8 +452,35 @@ def run_reflection_sync(user_query: str, max_rounds: int = 3) -> dict:
 
 if __name__ == "__main__":
     # 異步執行
-    asyncio.run(main())
-    
-    # 或者使用同步版本
-    result = run_reflection_sync("為什麼醫療資源會壅塞？有什麼解決方案嗎？")
-    print(result['final_summary'])
+    # asyncio.run(main())
+    from evaluator import NeedEvaluator
+    evaluator = NeedEvaluator()
+
+    while True:
+        user_query = input("請輸入您的問題（或輸入 'exit' 退出）：")
+        if user_query.lower() == 'exit':
+            print("退出系統。")
+            break
+        result = run_reflection_sync(user_query)
+        print(f"討論回合數：{result['discussion_rounds']}")
+        n = 1
+        print("\n📋 ==========解析後的需求項目列表==========\n")
+        for need in result['parsed_needs']['needs']:
+            print(
+                  
+                  f"need {n}: {need['need']}\n"
+                  f"摘要: {need['summary']}\n"
+                  f"醫療的觀點: {need['medical_insights']}\n"
+                  f"技術的觀點: {need['tech_insights']}\n"
+                  f"建議及策略: {need['strategy']}\n"
+                  f"-------------------\n")
+            n += 1
+            time.sleep(0.5)  # 模擬輸出延遲
+        eval_reslt = evaluator.evaluate_needs(result['parsed_needs']['needs'])
+        print("\n📊 ==========評估結果==========\n"
+              f"總分: {eval_reslt.total_score}\n"
+              f"醫療洞察分數: {eval_reslt.medical_insights_score}\n"
+              f"技術洞察分數: {eval_reslt.tech_insights_score}\n"
+              f"實施策略分數: {eval_reslt.strategy_score}\n"
+              f"優先需求: {', '.join(eval_reslt.top_priority_needs)}\n")
+        n = 0
