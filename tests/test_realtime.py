@@ -5,7 +5,7 @@
 
 import asyncio
 import time
-from src.agents.need_finder_fixed import MedicalReflectionSystemWithRealtime
+from agents.need_finder_realtime import MedicalReflectionSystemWithRealtime
 
 def status_callback(event_type: str, agent: str, data: dict):
     """狀態回調函數"""

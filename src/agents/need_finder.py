@@ -4,14 +4,10 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END, START
-from langgraph.types import Command
-import asyncio
-from IPython.display import Image, display
-from PIL import Image as PILImage
+
 from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
-import json
-import time
+
 
 
 # 定義需求項目的結構
@@ -48,7 +44,6 @@ class MedicalReflectionSystem:
         self.max_rounds = max_discussion_rounds
         self.status_callback = status_callback
         self.graph = self._build_graph()
-        self.checkpointer = MemorySaver()
         
         # 初始化 parser
         self.parser = PydanticOutputParser(pydantic_object=NeedsOutput)
@@ -95,8 +90,10 @@ class MedicalReflectionSystem:
         
         builder.add_edge("collector", END)
 
-        
-        return builder.compile(checkpointer=self.checkpointer)
+        # 設置檢查點保存器以支援狀態持久化
+        memory = MemorySaver()
+        return builder.compile(checkpointer=memory)
+
     
     def get_current_state(self, thread_id: str = "default"):
         """獲取當前 graph 狀態"""
@@ -329,8 +326,11 @@ class MedicalReflectionSystem:
             "final_summary": ""
         }
         
+        # 配置檢查點
+        config = {"configurable": {"thread_id": "default"}}
+        
         # 執行工作流程
-        result = await self.graph.ainvoke(initial_state)
+        result = await self.graph.ainvoke(initial_state, config)
         
         
         # 嘗試解析最終結果
@@ -364,8 +364,11 @@ def run_reflection_sync(user_query: str, max_rounds: int = 3) -> dict:
         "final_summary": ""
     }
     
+    # 配置檢查點
+    config = {"configurable": {"thread_id": "default"}}
+    
     # 同步執行
-    result = reflection_system.graph.invoke(initial_state)
+    result = reflection_system.graph.invoke(initial_state, config)
     
     # 嘗試解析最終結果
     try:
@@ -383,104 +386,3 @@ def run_reflection_sync(user_query: str, max_rounds: int = 3) -> dict:
         "final_summary": result["final_summary"],
         "full_conversation": [msg.content for msg in result["messages"]]
     }
-
-# 使用範例
-async def main():
-    # 初始化系統
-    reflection_system = MedicalReflectionSystem(max_discussion_rounds=3)
-    
-    # 使用者查詢
-    user_query = "為什麼醫療資源會壅塞？有什麼解決方案嗎？"
-    
-    print("🏥 啟動醫療資源壅塞分析系統...")
-    print(f"📝 使用者問題：{user_query}")
-    print("=" * 60)
-    
-    # 執行 reflection 流程
-    result = await reflection_system.run_reflection(user_query)
-    
-    # 輸出結果
-    print("\n📊 **討論結果總覽**")
-    print(f"討論輪數：{result['discussion_rounds']}")
-    print(f"醫療洞察數量：{len(result['medical_insights'])}")
-    print(f"工程洞察數量：{len(result['engineering_insights'])}")
-    
-    print("\n📋 **解析後的需求項目列表**")
-    parsed_needs = result.get('parsed_needs', {}).get('needs', [])
-    for i, need_info in enumerate(parsed_needs, 1):
-        print(f"\n🎯 **需求項目 {i}**")
-        print(f"🏷️ 需求名稱: {need_info.get('need', 'N/A')}")
-        print(f"📝 摘要: {need_info.get('summary', 'N/A')}")
-        print(f"🏥 醫療洞察: {need_info.get('medical_insights', 'N/A')[:150]}...")
-        print(f"⚙️ 技術洞察: {need_info.get('tech_insights', 'N/A')[:150]}...")
-        print(f"🎯 策略: {need_info.get('strategy', 'N/A')[:150]}...")
-
-# 同步版本的執行函數
-def run_reflection_sync(user_query: str, max_rounds: int = 3) -> dict:
-    """同步版本的 reflection 執行"""
-    reflection_system = MedicalReflectionSystem(max_discussion_rounds=max_rounds)
-    
-    initial_state = {
-        "messages": [HumanMessage(content=user_query)],
-        "medical_insights": [],
-        "engineering_insights": [],
-        "discussion_round": 0,
-        "max_rounds": max_rounds,
-        "final_summary": ""
-    }
-    
-    # 同步執行
-    result = reflection_system.graph.invoke(initial_state)
-    # print("\n==========final result==========\n", result)
-
-    # 嘗試解析最終結果
-    try:
-        import ast
-        parsed_needs = ast.literal_eval(result["final_summary"])
-    except:
-        parsed_needs = {"needs": []}
-    
-    return {
-        "original_query": user_query,
-        "discussion_rounds": result["discussion_round"],
-        "medical_insights": result["medical_insights"],
-        "engineering_insights": result["engineering_insights"],
-        "parsed_needs": parsed_needs,
-        "final_summary": result["final_summary"],
-        "full_conversation": [msg.content for msg in result["messages"]]
-    }
-
-if __name__ == "__main__":
-    # 異步執行
-    # asyncio.run(main())
-    from evaluator import NeedEvaluator
-    evaluator = NeedEvaluator()
-
-    while True:
-        user_query = input("請輸入您的問題（或輸入 'exit' 退出）：")
-        if user_query.lower() == 'exit':
-            print("退出系統。")
-            break
-        result = run_reflection_sync(user_query)
-        print(f"討論回合數：{result['discussion_rounds']}")
-        n = 1
-        print("\n📋 ==========解析後的需求項目列表==========\n")
-        for need in result['parsed_needs']['needs']:
-            print(
-                  
-                  f"need {n}: {need['need']}\n"
-                  f"摘要: {need['summary']}\n"
-                  f"醫療的觀點: {need['medical_insights']}\n"
-                  f"技術的觀點: {need['tech_insights']}\n"
-                  f"建議及策略: {need['strategy']}\n"
-                  f"-------------------\n")
-            n += 1
-            time.sleep(0.5)  # 模擬輸出延遲
-        eval_reslt = evaluator.evaluate_needs(result['parsed_needs']['needs'])
-        print("\n📊 ==========評估結果==========\n"
-              f"總分: {eval_reslt.total_score}\n"
-              f"醫療洞察分數: {eval_reslt.medical_insights_score}\n"
-              f"技術洞察分數: {eval_reslt.tech_insights_score}\n"
-              f"實施策略分數: {eval_reslt.strategy_score}\n"
-              f"優先需求: {', '.join(eval_reslt.top_priority_needs)}\n")
-        n = 0

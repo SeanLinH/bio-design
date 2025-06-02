@@ -1,117 +1,298 @@
-# Biodesign 醫療器材創新設計方法學
+# 🏥 Biodesign Methodology with LLM Agent
 
-> 一套源自史丹福大學的結構化醫療創新方法，將創新從靈感發想轉變為系統性的問題解決過程
+> A Stanford University methodology for systematic medical device innovation, enhanced with multi-agent LLM implementation for intelligent medical needs analysis
 
-## 🎯 專案目標
+## 🎯 Project Goal
 
-本專案旨在整理和分享Biodesign創新方法學的核心概念、實作工具和學習資源，幫助醫療創新者建立系統性的創新思維和實作能力。
+This project implements the Stanford Biodesign Methodology using a sophisticated multi-agent LLM system to systematize and enhance the medical device innovation process. The system features specialized AI agents (Medical Expert, Systems Engineer, and Needs Collector) that collaborate to identify and analyze healthcare needs through structured discussions.
 
-## 📚 什麼是Biodesign？
+## 📚 What is Biodesign?
 
-Biodesign是史丹福大學開發的醫療器材創新設計方法學，其核心理念是：
+Biodesign is a systematic approach to medical device innovation developed by Stanford University. The methodology consists of three core phases:
 
-- **以病人需求為中心**：從醫療現場的實際需求出發，而非技術驅動
-- **結構化創新過程**：將創新轉化為可學習、可重複的系統性方法
-- **跨領域整合**：結合醫學、工程、商業等多重專業視角
+### 1. Identify 🔍
+This phase focuses on discovering significant unmet healthcare needs through:
+- Clinical environment immersion
+- Observation of complete care cycles (diagnosis → treatment → recovery → billing)
+- Problem and opportunity identification
+- Need gathering and prioritization based on potential impact
 
-## 🔄 六步驟創新流程
+### 2. Invent 💡
+During this phase, teams:
+- Brainstorm diverse solution concepts
+- Create and test rapid prototypes
+- Implement "think-build-rethink" iteration cycles
+- Evaluate concepts for:
+  - Technical feasibility
+  - Intellectual property potential
+  - Business model viability
+  - Regulatory pathway considerations
 
-```
-需求識別 → 需求篩選 → 概念產生 → 概念篩選 → 策略發展 → 實作規劃 ↓           ↓           ↓           ↓           ↓           ↓ 觀察痛點   評估機會   創意發想   可行性評估   商業模式   執行計畫
-```
+### 3. Implement 🚀
+The final phase involves:
+- Technology refinement
+- Development of regulatory approval strategies
+- Reimbursement planning
+- Market potential assessment
+- Funding source exploration
+- Collaboration with industry mentors
 
-### 1. 需求識別 (Need Finding)
-- 臨床觀察與訪談
-- 痛點發掘與分析
-- 利害關係人映射
+## 🤖 Multi-Agent System
 
-### 2. 需求篩選 (Need Screening)
-- 市場規模評估
-- 技術可行性分析
-- 法規環境考量
+This implementation enhances the Biodesign methodology with three specialized AI agents:
 
-### 3. 概念產生 (Concept Generation)
-- 頭腦風暴工作坊
-- 設計思維方法
-- 跨領域協作
+- **🩺 Medical Expert Agent**: Analyzes healthcare needs from clinical and medical perspectives
+- **⚙️ Systems Engineer Agent**: Provides technical solutions and system optimization insights  
+- **📋 Needs Collector Agent**: Synthesizes discussions and extracts actionable medical device requirements
 
-### 4. 概念篩選 (Concept Screening)
-- 原型製作與測試
-- 使用者回饋收集
-- 技術驗證
-
-### 5. 策略發展 (Strategy Development)
-- 商業模式設計
-- 智財策略規劃
-- 法規路徑分析
-
-### 6. 實作規劃 (Implementation Planning)
-- 資源需求評估
-- 時程規劃
-- 風險管理
-
-## 🛠️ 工具與資源
-
-### 核心工具
-- [ ] 需求識別工作表
-- [ ] 概念評估矩陣
-- [ ] 商業模式畫布
-- [ ] 原型設計指南
-- [ ] 法規檢核清單
-
-### 學習資源
-- [ ] 案例研究集
-- [ ] 工作坊簡報模板
-- [ ] 評估指標框架
-- [ ] 最佳實務指南
-
-## 🌏 全球發展現況
-
-- **創立時間**：2001年於史丹福大學
-- **全球據點**：18個國家設有課程
-- **創業成果**：56家新創公司成立
-- **影響範圍**：超過940萬名患者受益
-
-### 台灣發展
-- **成功大學**：2012年起推動，培育近500位人才
-- **台灣大學**：2021年開設首期課程
-- **台北醫學大學**：2021年成立Biodesign中心
-- **中山醫學大學**：2024年與台大合作開課
-
-## 🚀 快速開始
-
-1. **環境準備**
+## 🛠️ Project Structure
 
 ```
-git clone https://github.com/your-username/biodesign-methodology.git
-cd biodesign-methodology
+bio-design/
+├── src/
+│   ├── agents/           # Multi-agent LLM implementation
+│   │   ├── need_finder.py          # Core reflection system
+│   │   ├── need_finder_realtime.py # Real-time analysis system
+│   │   ├── evaluator.py            # Needs evaluation system
+│   │   └── ...
+│   └── docs/            # API and setup documentation
+├── static/
+│   └── index.html       # Web UI interface
+├── experiments/         # Jupyter notebooks and experiments
+├── tests/              # Test files
+├── run.py          # FastAPI server
+├── pyproject.toml      # UV project configuration
+└── README.md           # This file
 ```
 
+## 🚀 Quick Setup with UV
 
-2. **學習路徑**
-- 閱讀核心概念文件
-- 參與工作坊練習
-- 實作小型專案
-- 加入社群討論
+### Prerequisites
+- Python 3.10 or higher
+- [UV package manager](https://docs.astral.sh/uv/) (recommended) or pip
+- OpenAI API key
 
-3. **實作專案**
-- 選擇醫療痛點
-- 應用六步驟流程
-- 記錄學習心得
-- 分享成果經驗
+### 1. Install UV (if not already installed)
+```bash
+# On macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-## 📖 文件結構
-
-```
-├── docs/                 # 核心文件 │   ├── methodology/      # 方法學說明 │   ├── tools/           # 實作工具 │   └── case-studies/    # 案例研究 ├── templates/           # 工作表模板 ├── workshops/          # 工作坊資料 └── examples/           # 實作範例
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-## 🤝 貢獻指南
+### 2. Clone and Setup
+```bash
+# Clone the repository
+git clone <repository-url>
+cd bio-design
 
-歡迎各界專家學者貢獻知識和經驗：
+# Create virtual environment and install dependencies
+uv sync
 
-1. Fork 本專案
-2. 建立功能分支 (`git checkout -b feature/amazing-tool`)
-3. 提交變更 (`git commit -m 'Add amazing tool'`)
-4. 推送分支 (`git push origin feature/amazing-tool`)
-5. 開啟 Pull Request
+# Activate the virtual environment
+source .venv/bin/activate  # Linux/macOS
+# or
+.venv\Scripts\activate     # Windows
+```
+
+### 3. Configure OpenAI API
+```bash
+# Create environment file
+cp .env.example .env
+
+# Edit .env file and add your OpenAI API key
+echo "OPENAI_API_KEY=your_openai_api_key_here" > .env
+```
+
+### 4. Start the Service
+```bash
+# Start the FastAPI server
+uv run python run.py
+
+# Or alternatively
+python run.py
+```
+
+The service will be available at `http://localhost:8000`
+
+## 🖥️ Web User Interface
+
+### Accessing the UI
+Open your browser and navigate to `http://localhost:8000` to access the interactive web interface.
+
+### UI Features
+
+#### Main Interface
+- **Query Input**: Large text area for entering medical scenarios or questions
+- **Discussion Rounds**: Configurable number of agent discussion rounds (2-5)
+- **Analysis Modes**: 
+  - Standard Analysis: Traditional batch processing
+  - ⚡ Real-time Analysis: Live agent discussions with status updates
+
+#### Real-time Analysis Panel
+When using real-time analysis, you'll see:
+- **Live Agent Status**: Real-time updates showing which agent is currently thinking
+- **Discussion Progress**: Round-by-round conversation between Medical Expert and Systems Engineer
+- **Agent Messages**: Color-coded messages from different agents:
+  - 🔴 Medical Expert (Red border)
+  - 🟢 Systems Engineer (Green border) 
+  - 🟠 Needs Collector (Orange border)
+  - 🟣 System Messages (Purple border)
+
+#### Results Tabs
+- **📋 Analysis Results**: Structured needs analysis with medical insights
+- **⭐ Evaluation**: Automated scoring and prioritization of identified needs
+- **📊 Prioritization**: Ranking and implementation recommendations
+- **🔧 Raw Data**: Complete conversation logs and technical details
+
+### Sample Query
+Try this example query to see the system in action:
+```
+An older patient with multiple chronic diseases faces problems with poor medication adherence, lack of real-time monitoring, and personalized support during home care and outpatient follow-ups.
+```
+
+## 📡 API Endpoints
+
+### Core Endpoints
+- `GET /` - Web UI interface
+- `POST /api/reflection` - Submit standard analysis request
+- `POST /api/reflection-realtime` - Submit real-time analysis request
+- `GET /api/reflection/{session_id}` - Get analysis results
+- `GET /api/evaluation/{session_id}` - Get needs evaluation
+- `GET /api/prioritization/{session_id}` - Get prioritization results
+
+### Real-time Streaming
+- `GET /api/reflection-stream/{session_id}` - Server-Sent Events for real-time updates
+
+### Monitoring
+- `GET /health` - Service health check
+- `GET /api/sessions` - List active analysis sessions
+
+## 🔧 Usage Examples
+
+### Web Interface Usage
+1. **Open** `http://localhost:8000` in your browser
+2. **Enter** a medical scenario in the query text area
+3. **Select** the number of discussion rounds (3 recommended)
+4. **Choose** analysis mode:
+   - "Start Analysis" for standard processing
+   - "⚡ Start Real-time Analysis" for live updates
+5. **Monitor** progress in real-time (if selected)
+6. **Review** results in the tabbed interface
+
+### API Usage
+```python
+import requests
+
+# Submit analysis request
+response = requests.post("http://localhost:8000/api/reflection", json={
+    "query": "Your medical scenario here...",
+    "max_rounds": 3
+})
+
+session_id = response.json()["session_id"]
+
+# Get results
+results = requests.get(f"http://localhost:8000/api/reflection/{session_id}")
+print(results.json())
+```
+
+### Real-time Analysis
+```python
+import requests
+import sseclient  # pip install sseclient-py
+
+# Start real-time analysis
+response = requests.post("http://localhost:8000/api/reflection-realtime", json={
+    "query": "Your medical scenario here...",
+    "max_rounds": 3
+})
+
+session_id = response.json()["session_id"]
+
+# Stream real-time updates
+stream = sseclient.SSEClient(f"http://localhost:8000/api/reflection-stream/{session_id}")
+for event in stream:
+    if event.data:
+        print(f"Update: {event.data}")
+```
+
+## 🧪 Development and Testing
+
+### Run Tests
+```bash
+# Run all tests
+uv run pytest tests/
+
+# Run specific test
+uv run python tests/test_api.py
+```
+
+### Development Mode
+```bash
+# Start with auto-reload for development
+uv run uvicorn run:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Jupyter Notebooks
+Explore the `experiments/` directory for interactive notebooks demonstrating various features:
+- `multi_agent.ipynb` - Multi-agent system exploration
+- `agent_supervisor.ipynb` - Agent coordination patterns
+- `reflection.ipynb` - Reflection methodology implementation
+
+## 🔒 Configuration
+
+### Environment Variables
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `OPENAI_BASE_URL`: Custom OpenAI compatible endpoint (optional)
+- `LOG_LEVEL`: Logging level (default: INFO)
+
+### Model Configuration
+The system uses `gpt-4.1-mini` by default. You can modify the model in the agent configuration files.
+
+## 📊 System Output
+
+The system generates structured analysis including:
+- **Medical Needs**: Identified healthcare requirements
+- **Technical Solutions**: Engineering and system recommendations  
+- **Implementation Strategies**: Prioritized action plans
+- **Evaluation Metrics**: Scoring and ranking of needs
+- **Full Conversation Logs**: Complete agent discussions
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### OpenAI API Key Issues
+```bash
+# Verify your API key is set
+echo $OPENAI_API_KEY
+
+# Test OpenAI connection
+uv run python test_openai.py
+```
+
+#### Port Already in Use
+```bash
+# Use a different port
+uv run python run.py --port 8001
+```
+
+#### Dependencies Issues
+```bash
+# Reinstall dependencies
+uv sync --reinstall
+```
+
+## 📄 License
+
+[License information to be added]
+
+## 🤝 Contributing
+
+[Contribution guidelines to be added]
+
+## 📬 Contact
+
+[Contact information to be added] 
