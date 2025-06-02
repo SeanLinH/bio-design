@@ -1,4 +1,4 @@
-# Medical Reflection System API
+# Biodesign Methodology with LLM Agent
 
 A FastAPI-based web service for medical needs analysis and evaluation using the MedicalReflectionSystem.
 

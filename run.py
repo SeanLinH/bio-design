@@ -53,7 +53,7 @@ sessions: Dict[str, Dict[str, Any]] = {}
 session_streams: Dict[str, List[Dict[str, Any]]] = {}  # Store stream events
 
 app = FastAPI(
-    title="Medical Reflection System API",
+    title="Biodesign Methodology with LLM Agent",
     description="API for medical needs analysis and evaluation",
     version="1.0.0"
 )
@@ -317,7 +317,7 @@ async def api_info():
     """API information endpoint"""
     logger.info("API info requested")
     return {
-        "message": "Medical Reflection System API",
+        "message": "Biodesign Methodology with LLM Agent",
         "version": "1.0.0",
         "endpoints": {
             "POST /api/reflection": "Submit query for medical reflection analysis",
@@ -582,5 +582,5 @@ async def stream_reflection_updates(session_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting Medical Reflection System API server")
+    logger.info("Starting Biodesign Methodology with LLM Agent server")
     uvicorn.run("run:app", host="0.0.0.0", port=7878, reload=True)
