@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biodesign Methodology with LLM Agent</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .status.loading {
+            background: #f39c12;
+            color: white;
+        }
+        .status.success {
+            background: #27ae60;
+            color: white;
+        }
+        .status.error {
+            background: #e74c3c;
+            color: white;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .result-section {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .result-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .need-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+        .score {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .real-time-status {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .agent-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .agent-medical {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        .agent-engineer {
+            border-left-color: #2ecc71;
+            background: #f2fdf7;
+        }
+        .agent-collector {
+            border-left-color: #f39c12;
+            background: #fefbf2;
+        }
+        .agent-system {
+            border-left-color: #9b59b6;
+            background: #f8f3fd;
+        }
+        .thinking-indicator {
+            display: inline-block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e1e8ed;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Medical Reflection System API</h1>
+        
+        <div class="form-group">
+            <label for="query">Medical Query:</label>
+            <textarea id="query" placeholder="Enter your medical question or scenario here...">An older patient with multiple chronic diseases faces problems with poor medication adherence, lack of real-time monitoring, and personalized support during home care and outpatient follow-ups</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="maxRounds">Maximum Discussion Rounds:</label>
+            <select id="maxRounds">
+                <option value="2">2 rounds</option>
+                <option value="3" selected>3 rounds</option>
+                <option value="4">4 rounds</option>
+                <option value="5">5 rounds</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button id="submitBtn" onclick="submitQuery()">🚀 Start Analysis</button>
+            <button id="realtimeBtn" onclick="submitRealtimeQuery()">⚡ Start Real-time Analysis</button>
+        </div>
+        
+        <div id="status"></div>
+        
+        <!-- Real-time status display -->
+        <div id="realtimeStatus" class="real-time-status" style="display: none;">
+            <h3>🔄 Real-time Discussion Status</h3>
+            <div id="realtimeMessages"></div>
+        </div>
+        
+        <div id="results" class="results" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('reflection')">Reflection Results</div>
+                <div class="tab" onclick="showTab('evaluation')">Evaluation</div>
+                <div class="tab" onclick="showTab('prioritization')">Prioritization</div>
+                <div class="tab" onclick="showTab('realtime')">Real-time Log</div>
+                <div class="tab" onclick="showTab('raw')">Raw JSON</div>
+            </div>
+            
+            <div id="reflection-tab" class="tab-content active">
+                <div id="reflectionResults"></div>
+            </div>
+            
+            <div id="evaluation-tab" class="tab-content">
+                <div id="evaluationResults"></div>
+            </div>
+            
+            <div id="prioritization-tab" class="tab-content">
+                <div id="prioritizationResults"></div>
+            </div>
+            
+            <div id="realtime-tab" class="tab-content">
+                <h3>Real-time Discussion Log</h3>
+                <div id="realtimeLog"></div>
+            </div>
+            
+            <div id="raw-tab" class="tab-content">
+                <h3>Raw JSON Data</h3>
+                <pre id="rawData"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let allResults = {};
+        let realtimeEvents = [];
+        let eventSource = null;
+
+        function showStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function showRealtimeStatus() {
+            document.getElementById('realtimeStatus').style.display = 'block';
+        }
+
+        function hideRealtimeStatus() {
+            document.getElementById('realtimeStatus').style.display = 'none';
+        }
+
+        function addRealtimeMessage(event) {
+            const messagesDiv = document.getElementById('realtimeMessages');
+            const timestamp = new Date(event.timestamp).toLocaleTimeString();
+            
+            let agentClass = 'agent-system';
+            let agentIcon = '🤖';
+            let agentName = event.data.agent_name || event.agent;
+            
+            if (event.agent === 'medical_expert') {
+                agentClass = 'agent-medical';
+                agentIcon = '🏥';
+            } else if (event.agent === 'engineer') {
+                agentClass = 'agent-engineer';  
+                agentIcon = '⚙️';
+            } else if (event.agent === 'collector') {
+                agentClass = 'agent-collector';
+                agentIcon = '📝';
+            }
+            
+            let messageContent = '';
+            if (event.event_type === 'thinking_started') {
+                messageContent = `<span class="thinking-indicator">${agentIcon} ${agentName}</span>: ${event.data.message}`;
+            } else if (event.event_type === 'thinking_completed') {
+                messageContent = `✅ ${agentIcon} ${agentName}: 完成思考 (第 ${event.data.round} 輪)`;
+                if (event.data.response) {
+                    messageContent += `<br><small style="color: #666;">${event.data.response.substring(0, 100)}...</small>`;
+                }
+            } else if (event.event_type === 'collecting_started') {
+                messageContent = `📊 ${agentIcon} ${agentName}: ${event.data.message}`;
+            } else if (event.event_type === 'collecting_completed') {
+                messageContent = `✅ ${agentIcon} ${agentName}: 完成收集，識別出 ${event.data.needs_count} 個需求`;
+            } else if (event.event_type === 'reflection_started') {
+                messageContent = `🚀 系統: ${event.data.message} (最大 ${event.data.max_rounds} 輪)`;
+            } else if (event.event_type === 'reflection_completed') {
+                messageContent = `🎉 系統: ${event.data.message} (共 ${event.data.discussion_rounds} 輪討論，${event.data.needs_count} 個需求)`;
+            } else {
+                messageContent = `${agentIcon} ${agentName}: ${event.data.message || 'Processing...'}`;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `agent-message ${agentClass}`;
+            messageDiv.innerHTML = `<small style="color: #666;">[${timestamp}]</small><br>${messageContent}`;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function submitQuery() {
+            const query = document.getElementById('query').value.trim();
+            const maxRounds = parseInt(document.getElementById('maxRounds').value);
+            
+            if (!query) {
+                showStatus('Please enter a medical query', 'error');
+                return;
+            }
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('realtimeBtn').disabled = true;
+            document.getElementById('results').style.display = 'none';
+            hideRealtimeStatus();
+            
+            try {
+                showStatus('🔄 Submitting query to Medical Reflection System...');
+                
+                // Submit the query
+                const response = await fetch('/api/reflection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        max_rounds: maxRounds
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                currentSessionId = data.session_id;
+                
+                showStatus(`✅ Query submitted! Session ID: ${currentSessionId}<br>⏳ Processing reflection analysis...`);
+                
+                // Poll for results
+                await pollForResults();
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('realtimeBtn').disabled = false;
+            }
+        }
+
+        async function submitRealtimeQuery() {
+            const query = document.getElementById('query').value.trim();
+            const maxRounds = parseInt(document.getElementById('maxRounds').value);
+            
+            if (!query) {
+                showStatus('Please enter a medical query', 'error');
+                return;
+            }
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('realtimeBtn').disabled = true;
+            document.getElementById('results').style.display = 'none';
+            
+            // Clear previous realtime data
+            realtimeEvents = [];
+            document.getElementById('realtimeMessages').innerHTML = '';
+            
+            try {
+                showStatus('🔄 Starting real-time reflection analysis...');
+                showRealtimeStatus();
+                
+                // Submit the query
+                const response = await fetch('/api/reflection-realtime', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        max_rounds: maxRounds
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                currentSessionId = data.session_id;
+                
+                showStatus(`✅ Real-time analysis started! Session ID: ${currentSessionId}`);
+                
+                // Start real-time event stream
+                startRealtimeStream();
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('realtimeBtn').disabled = false;
+            }
+        }
+
+        function startRealtimeStream() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            eventSource = new EventSource(`/api/reflection-stream/${currentSessionId}`);
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    realtimeEvents.push(data);
+                    addRealtimeMessage(data);
+                    
+                    if (data.event_type === 'session_completed') {
+                        eventSource.close();
+                        setTimeout(async () => {
+                            await getCompletedResults();
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Error parsing event data:', error);
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('EventSource failed:', event);
+                eventSource.close();
+                showStatus('❌ Real-time connection lost. Checking for results...', 'error');
+                setTimeout(async () => {
+                    await getCompletedResults();
+                }, 3000);
+            };
+        }
+
+        async function getCompletedResults() {
+            try {
+                // Check reflection status
+                const reflectionResponse = await fetch(`/api/reflection/${currentSessionId}`);
+                const reflectionData = await reflectionResponse.json();
+                
+                if (reflectionData.status === 'completed') {
+                    allResults.reflection = reflectionData;
+                    
+                    // Get evaluation results
+                    const evaluationResponse = await fetch(`/api/evaluation/${currentSessionId}`);
+                    if (evaluationResponse.ok) {
+                        const evaluationData = await evaluationResponse.json();
+                        allResults.evaluation = evaluationData;
+                    }
+                    
+                    // Get prioritization results
+                    const prioritizationResponse = await fetch(`/api/prioritization/${currentSessionId}`);
+                    if (prioritizationResponse.ok) {
+                        const prioritizationData = await prioritizationResponse.json();
+                        allResults.prioritization = prioritizationData;
+                    }
+                    
+                    displayResults();
+                    showStatus('🎉 Analysis completed successfully!', 'success');
+                } else {
+                    showStatus(`❌ Analysis failed: ${reflectionData.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error getting results: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('realtimeBtn').disabled = false;
+            }
+        }
+
+        async function pollForResults() {
+            let attempts = 0;
+            const maxAttempts = 60; // 10 minutes max
+            
+            while (attempts < maxAttempts) {
+                try {
+                    // Check reflection status
+                    const reflectionResponse = await fetch(`/api/reflection/${currentSessionId}`);
+                    const reflectionData = await reflectionResponse.json();
+                    
+                    if (reflectionData.status === 'completed') {
+                        allResults.reflection = reflectionData;
+                        showStatus('✅ Reflection completed! Getting evaluation results...');
+                        
+                        // Get evaluation results
+                        const evaluationResponse = await fetch(`/api/evaluation/${currentSessionId}`);
+                        if (evaluationResponse.ok) {
+                            const evaluationData = await evaluationResponse.json();
+                            allResults.evaluation = evaluationData;
+                        }
+                        
+                        // Get prioritization results
+                        const prioritizationResponse = await fetch(`/api/prioritization/${currentSessionId}`);
+                        if (prioritizationResponse.ok) {
+                            const prioritizationData = await prioritizationResponse.json();
+                            allResults.prioritization = prioritizationData;
+                        }
+                        
+                        displayResults();
+                        showStatus('🎉 Analysis completed successfully!', 'success');
+                        return;
+                    } else if (reflectionData.status === 'error') {
+                        throw new Error('Reflection analysis failed');
+                    }
+                    
+                    showStatus(`⏳ Processing... (Attempt ${attempts + 1}/${maxAttempts})`);
+                    await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+                    attempts++;
+                    
+                } catch (error) {
+                    showStatus(`❌ Error polling results: ${error.message}`, 'error');
+                    return;
+                }
+            }
+            
+            showStatus('❌ Timeout: Analysis took too long to complete', 'error');
+        }
+
+        function displayResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            
+            // Display reflection results
+            displayReflectionResults();
+            
+            // Display evaluation results
+            if (allResults.evaluation) {
+                displayEvaluationResults();
+            }
+            
+            // Display prioritization results
+            if (allResults.prioritization) {
+                displayPrioritizationResults();
+            }
+            
+            // Display realtime log
+            displayRealtimeLog();
+            
+            // Display raw JSON
+            document.getElementById('rawData').textContent = JSON.stringify(allResults, null, 2);
+        }
+
+        function displayRealtimeLog() {
+            const container = document.getElementById('realtimeLog');
+            
+            if (realtimeEvents.length === 0) {
+                container.innerHTML = '<p>No real-time events recorded for this session.</p>';
+                return;
+            }
+            
+            let html = '<div class="result-section">';
+            realtimeEvents.forEach((event, index) => {
+                const timestamp = new Date(event.timestamp).toLocaleString();
+                let eventClass = 'agent-system';
+                
+                if (event.agent === 'medical_expert') {
+                    eventClass = 'agent-medical';
+                } else if (event.agent === 'engineer') {
+                    eventClass = 'agent-engineer';
+                } else if (event.agent === 'collector') {
+                    eventClass = 'agent-collector';
+                }
+                
+                html += `
+                    <div class="agent-message ${eventClass}">
+                        <strong>[${timestamp}] ${event.event_type}</strong><br>
+                        <strong>Agent:</strong> ${event.data.agent_name || event.agent}<br>
+                        <strong>Data:</strong> ${JSON.stringify(event.data, null, 2)}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        function displayReflectionResults() {
+            const data = allResults.reflection;
+            const container = document.getElementById('reflectionResults');
+            
+            let html = `
+                <div class="result-section">
+                    <h3>📊 Analysis Overview</h3>
+                    <p><strong>Discussion Rounds:</strong> ${data.discussion_rounds}</p>
+                    <p><strong>Medical Insights:</strong> ${data.medical_insights.length}</p>
+                    <p><strong>Engineering Insights:</strong> ${data.engineering_insights.length}</p>
+                    <p><strong>Identified Needs:</strong> ${data.parsed_needs.needs ? data.parsed_needs.needs.length : 0}</p>
+                </div>
+            `;
+            
+            if (data.parsed_needs.needs) {
+                html += '<div class="result-section"><h3>🎯 Identified Needs</h3>';
+                data.parsed_needs.needs.forEach((need, index) => {
+                    html += `
+                        <div class="need-item">
+                            <h4>${index + 1}. ${need.need}</h4>
+                            <p><strong>Summary:</strong> ${need.summary}</p>
+                            <p><strong>Medical Insights:</strong> ${need.medical_insights}</p>
+                            <p><strong>Technical Insights:</strong> ${need.tech_insights}</p>
+                            <p><strong>Strategy:</strong> ${need.strategy}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function displayEvaluationResults() {
+            const data = allResults.evaluation;
+            const container = document.getElementById('evaluationResults');
+            
+            let html = `
+                <div class="result-section">
+                    <h3>📈 Evaluation Summary</h3>
+                    <p>${data.summary}</p>
+                    <p><strong>Top Priority Needs:</strong> ${data.top_priority_needs.join(', ')}</p>
+                </div>
+            `;
+            
+            html += '<div class="result-section"><h3>📊 Detailed Evaluations</h3>';
+            data.evaluations.forEach((evaluation, index) => {
+                html += `
+                    <div class="need-item">
+                        <h4>${index + 1}. ${evaluation.need_title}</h4>
+                        <p><strong>Overall Score:</strong> <span class="score">${evaluation.overall_score.toFixed(1)}/10</span></p>
+                        <p><strong>Feasibility:</strong> ${evaluation.feasibility_score.toFixed(1)}/10 | 
+                           <strong>Impact:</strong> ${evaluation.impact_score.toFixed(1)}/10 | 
+                           <strong>Innovation:</strong> ${evaluation.innovation_score.toFixed(1)}/10 | 
+                           <strong>Resource Efficiency:</strong> ${evaluation.resource_score.toFixed(1)}/10</p>
+                        
+                        <p><strong>Strengths:</strong></p>
+                        <ul>
+                            ${evaluation.strengths.map(strength => `<li>${strength}</li>`).join('')}
+                        </ul>
+                        
+                        <p><strong>Weaknesses:</strong></p>
+                        <ul>
+                            ${evaluation.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
+                        </ul>
+                        
+                        <p><strong>Recommendations:</strong></p>
+                        <ul>
+                            ${evaluation.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        function displayPrioritizationResults() {
+            const data = allResults.prioritization;
+            const container = document.getElementById('prioritizationResults');
+            
+            let html = `
+                <div class="result-section">
+                    <h3>🎯 Priority Ranking</h3>
+            `;
+            
+            data.prioritized_needs.forEach(need => {
+                const priorityColor = need.priority_level === 'High' ? '#27ae60' : 
+                                    need.priority_level === 'Medium' ? '#f39c12' : '#e74c3c';
+                
+                html += `
+                    <div class="need-item">
+                        <h4>Rank ${need.rank}: ${need.need_title}</h4>
+                        <p><strong>Priority Level:</strong> <span style="color: ${priorityColor}; font-weight: bold;">${need.priority_level}</span></p>
+                        <p><strong>Overall Score:</strong> <span class="score">${need.overall_score.toFixed(1)}/10</span></p>
+                        <p><strong>Scores:</strong> Feasibility: ${need.feasibility_score.toFixed(1)} | 
+                           Impact: ${need.impact_score.toFixed(1)} | 
+                           Innovation: ${need.innovation_score.toFixed(1)} | 
+                           Resource: ${need.resource_score.toFixed(1)}</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            html += `
+                <div class="result-section">
+                    <h3>💡 Recommendations</h3>
+                    <ul>
+                        ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="result-section">
+                    <h3>📋 Ranking Criteria</h3>
+                    <ul>
+                        ${Object.entries(data.ranking_criteria).map(([key, value]) => 
+                            `<li><strong>${key}:</strong> ${value}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Health check on page load
+        window.onload = async function() {
+            try {
+                const response = await fetch('/health');
+                if (response.ok) {
+                    showStatus('✅ API server is ready!', 'success');
+                    setTimeout(hideStatus, 2000);
+                } else {
+                    showStatus('⚠️ API server may not be fully ready', 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Cannot connect to API server. Please make sure it\'s running.', 'error');
+            }
+        };
+    </script>
+</body>
+</html>
