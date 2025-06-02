@@ -4,10 +4,6 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END, START
-from langgraph.types import Command
-import asyncio
-from IPython.display import Image, display
-from PIL import Image as PILImage
 from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 import json
@@ -40,8 +36,7 @@ StatusCallback = Callable[[str, str, Dict[str, Any]], None]
 
 # 初始化 LLM
 llm = ChatOpenAI(
-    model="google/gemma-3-12b", 
-    base_url="http://localhost:1234/v1",
+    model="gpt-4.1-mini",
     temperature=0.7)
 
 class MedicalReflectionSystemWithRealtime:
@@ -49,7 +44,7 @@ class MedicalReflectionSystemWithRealtime:
         self.max_rounds = max_discussion_rounds
         self.status_callback = status_callback
         self.graph = self._build_graph()
-        self.checkpointer = MemorySaver()
+    
         
         # 初始化 parser
         self.parser = PydanticOutputParser(pydantic_object=NeedsOutput)
@@ -99,7 +94,9 @@ class MedicalReflectionSystemWithRealtime:
         
         builder.add_edge("collector", END)
 
-        return builder.compile(checkpointer=self.checkpointer)
+        # 設置檢查點保存器以支援狀態持久化  
+        memory = MemorySaver()
+        return builder.compile(checkpointer=memory)
     
     def get_current_state(self, thread_id: str = "default"):
         """獲取當前 graph 狀態"""

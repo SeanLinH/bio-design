@@ -40,7 +40,7 @@ logger.add(
 
 # Import your existing modules
 from src.agents.need_finder import MedicalReflectionSystem, run_reflection_sync
-from src.agents.need_finder_fixed import MedicalReflectionSystemWithRealtime, run_reflection_sync_realtime
+from src.agents.need_finder_realtime import MedicalReflectionSystemWithRealtime, run_reflection_sync_realtime
 from src.agents.evaluator import NeedEvaluator
 
 def evaluate_needs_list(needs_list):
@@ -583,4 +583,4 @@ async def stream_reflection_updates(session_id: str):
 if __name__ == "__main__":
     import uvicorn
     logger.info("Starting Medical Reflection System API server")
-    uvicorn.run("run_api:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("run:app", host="0.0.0.0", port=7878, reload=True)
