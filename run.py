@@ -583,4 +583,4 @@ async def stream_reflection_updates(session_id: str):
 if __name__ == "__main__":
     import uvicorn
     logger.info("Starting Biodesign Methodology with LLM Agent server")
-    uvicorn.run("run:app", host="0.0.0.0", port=7878, reload=True)
+    uvicorn.run("run:app", host="0.0.0.0", port=8000, reload=True)
