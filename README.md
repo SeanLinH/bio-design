@@ -1,11 +1,5 @@
 # 🏥 Biodesign Methodology with LLM Agent
 
-> A Stanford University methodology for systematic medical device innovation, enhanced with multi-agent LLM implementation for intelligent medical needs analysis
-
-## 🎯 Project Goal
-
-This project implements the Stanford Biodesign Methodology using a sophisticated multi-agent LLM system to systematize and enhance the medical device innovation process. The system features specialized AI agents (Medical Expert, Systems Engineer, and Needs Collector) that collaborate to identify and analyze healthcare needs through structured discussions.
-
 ## 📚 What is Biodesign?
 
 Biodesign is a systematic approach to medical device innovation developed by Stanford University. The methodology consists of three core phases:
@@ -36,34 +30,6 @@ The final phase involves:
 - Market potential assessment
 - Funding source exploration
 - Collaboration with industry mentors
-
-## 🤖 Multi-Agent System
-
-This implementation enhances the Biodesign methodology with three specialized AI agents:
-
-- **🩺 Medical Expert Agent**: Analyzes healthcare needs from clinical and medical perspectives
-- **⚙️ Systems Engineer Agent**: Provides technical solutions and system optimization insights  
-- **📋 Needs Collector Agent**: Synthesizes discussions and extracts actionable medical device requirements
-
-## 🛠️ Project Structure
-
-```
-bio-design/
-├── src/
-│   ├── agents/           # Multi-agent LLM implementation
-│   │   ├── need_finder.py          # Core reflection system
-│   │   ├── need_finder_realtime.py # Real-time analysis system
-│   │   ├── evaluator.py            # Needs evaluation system
-│   │   └── ...
-│   └── docs/            # API and setup documentation
-├── static/
-│   └── index.html       # Web UI interface
-├── experiments/         # Jupyter notebooks and experiments
-├── tests/              # Test files
-├── run.py          # FastAPI server
-├── pyproject.toml      # UV project configuration
-└── README.md           # This file
-```
 
 ## 🚀 Quick Setup with UV
 
@@ -224,10 +190,9 @@ for event in stream:
 ```bash
 # Run all tests
 uv run pytest tests/
+=======
 
-# Run specific test
-uv run python tests/test_api.py
-```
+## 🛠️ Project Structure
 
 ### Development Mode
 ```bash
@@ -284,15 +249,3 @@ uv run python run.py --port 8001
 # Reinstall dependencies
 uv sync --reinstall
 ```
-
-## 📄 License
-
-[License information to be added]
-
-## 🤝 Contributing
-
-[Contribution guidelines to be added]
-
-## 📬 Contact
-
-[Contact information to be added] 
