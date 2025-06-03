@@ -84,8 +84,11 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ### 2. Clone and Setup
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/SeanLinH/bio-design.git
 cd bio-design
+
+# copy .env.example to .env and setup API_KEY
+cp .env.example .env
 
 # Create virtual environment and install dependencies
 uv sync

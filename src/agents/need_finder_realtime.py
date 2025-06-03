@@ -6,8 +6,9 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END, START
 from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
-import json
-import time
+from os import getenv
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # 定義需求項目的結構
@@ -37,6 +38,7 @@ StatusCallback = Callable[[str, str, Dict[str, Any]], None]
 # 初始化 LLM
 llm = ChatOpenAI(
     model="gpt-4.1-mini",
+    api_key=getenv("OPENAI_API_KEY"),
     temperature=0.7)
 
 class MedicalReflectionSystemWithRealtime:
