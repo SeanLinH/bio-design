@@ -1,24 +1,25 @@
 """
-FastAPI Application for Medical Reflection System
+FastAPI Application for Biodesign Multi-Agent Innovation System
 
-This API provides endpoints to:
-1. POST /api/reflection - Submit query to run MedicalReflectionSystem
-2. GET /api/reflection/{session_id} - Get reflection results
-3. GET /api/evaluation/{session_id} - Get needs evaluation results  
-4. GET /api/prioritization/{session_id} - Get needs prioritization results
+This application provides the three-phase innovation process:
+1. IDENTIFY - Problem definition & need discovery
+2. INVENT - Solution ideation & development  
+3. IMPLEMENT - Business strategy & go-to-market
 """
 
+import uvicorn
+from app.main import app
+from app.config import settings
+from loguru import logger
+import sys
+from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
-import uuid
-import asyncio
 from datetime import datetime
-from loguru import logger
-import sys
+import uuid
 import json
 import time
 
@@ -583,4 +584,4 @@ async def stream_reflection_updates(session_id: str):
 if __name__ == "__main__":
     import uvicorn
     logger.info("Starting Biodesign Methodology with LLM Agent server")
-    uvicorn.run("run:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("run:app", host="0.0.0.0", port=8002, reload=True)

@@ -23,4 +23,20 @@ dependencies = [
     "langchain-tavily>=0.2.0",
     "loguru>=0.7.3",
     "python-dotenv>=1.1.0",
+    # RAG System dependencies
+    "chromadb>=0.4.22",
+    "sentence-transformers>=2.2.2",
+    "tiktoken>=0.5.2",
+    "pypdf>=3.17.4",
+    "python-docx>=1.1.0",
+    # Perplexity API and web search
+    "httpx>=0.26.0",
+    "aiohttp>=3.9.1",
+    # Mermaid diagram generation
+    "playwright>=1.40.0",
+    "pillow>=10.1.0",
+    # Additional utilities
+    "python-magic>=0.4.27",
+    "validators>=0.22.0",
+    "websockets>=12.0",
 ]
