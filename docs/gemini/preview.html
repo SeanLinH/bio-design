@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Design Platform UI Workflow Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --identify-color: #3b82f6; /* blue-500 */
+            --invent-color: #22c55e;   /* green-500 */
+            --implement-color: #f97316; /* orange-500 */
+            --gray-text: #6b7280; /* gray-500 */
+        }
+        .phase-header-identify { border-left-color: var(--identify-color); }
+        .phase-header-invent { border-left-color: var(--invent-color); }
+        .phase-header-implement { border-left-color: var(--implement-color); }
+        .agent-medical { color: #ec4899; }
+        .agent-technical { color: #8b5cf6; }
+        .agent-business { color: #06b6d4; }
+        .agent-regulatory { color: #84cc16; }
+        .agent-ethical { color: #f59e0b; }
+        .agent-patient { color: #ef4444; }
+        .agent-advocate { color: #6b7280; }
+        .agent-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        .step-connector {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #e5e7eb; /* gray-200 */
+        }
+        .step.active .step-circle { background-color: #3b82f6; color: white; }
+        .step.completed .step-circle { background-color: #16a34a; color: white; }
+        .step.active .step-label { color: #1d4ed8; font-weight: 600; }
+        .step.completed .step-label { color: #15803d; }
+        [disabled] { cursor: not-allowed; opacity: 0.6; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 bg-gray-800 text-white flex items-center justify-center rounded-lg font-bold text-lg">BD</div>
+                <h1 class="text-xl font-bold text-gray-800">Bio-Design Platform</h1>
+            </div>
+            <div class="text-sm font-medium text-gray-500">UI Workflow Preview</div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Workflow Steps -->
+        <div class="mb-12 flex items-center">
+            <div id="step-identify" class="step flex flex-col items-center active">
+                <div class="step-circle w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">1</div>
+                <p class="step-label text-sm mt-2">Identify</p>
+            </div>
+            <div class="step-connector"></div>
+            <div id="step-invent" class="step flex flex-col items-center">
+                <div class="step-circle w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">2</div>
+                <p class="step-label text-sm mt-2 text-gray-500">Invent</p>
+            </div>
+            <div class="step-connector"></div>
+            <div id="step-implement" class="step flex flex-col items-center">
+                <div class="step-circle w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">3</div>
+                <p class="step-label text-sm mt-2 text-gray-500">Implement</p>
+            </div>
+        </div>
+
+        <!-- Phase Content -->
+        <div id="phase-content" class="space-y-10">
+
+            <!-- IDENTIFY Phase -->
+            <section id="identify" class="phase-panel space-y-6">
+                <header class="phase-header-identify border-l-4 pl-4">
+                    <h2 class="text-3xl font-bold text-gray-800">Phase 1: Need Discovery & Problem Definition</h2>
+                    <p class="text-gray-600 mt-1">Upload research, describe a scenario, and let AI agents discover unmet medical needs.</p>
+                </header>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="file-plus" class="w-5 h-5 mr-2"></i>1. Provide Context</h3>
+                    <textarea id="identify-context" class="w-full p-2 border rounded-md" rows="4" placeholder="Describe a medical scenario, e.g., 'An older patient with multiple chronic diseases faces problems with poor medication adherence...'"></textarea>
+                    <button id="btn-analyze-needs" onclick="runIdentify()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"><i data-lucide="play" class="w-4 h-4 mr-2"></i>Start Needs Analysis</button>
+                </div>
+
+                <div id="identify-results" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="list-checks" class="w-5 h-5 mr-2"></i>2. Discovered Needs</h3>
+                        <div id="needs-list" class="space-y-3"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="bar-chart-3" class="w-5 h-5 mr-2"></i>3. Prioritization Matrix</h3>
+                        <p class="text-sm text-gray-600 mb-4">Agents have scored needs based on impact, feasibility, and market size.</p>
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3">Need</th>
+                                    <th class="px-4 py-3 text-center">Patient Impact</th>
+                                    <th class="px-4 py-3 text-center">Market Size</th>
+                                    <th class="px-4 py-3 text-center">Feasibility</th>
+                                    <th class="px-4 py-3 text-center">Overall Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="needs-matrix"></tbody>
+                        </table>
+                    </div>
+                    <div class="text-right">
+                        <button onclick="showPhase('invent')" class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 flex items-center ml-auto"><i data-lucide="arrow-right" class="w-4 h-4 mr-2"></i>Proceed to Invent Phase</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVENT Phase -->
+            <section id="invent" class="phase-panel hidden space-y-6">
+                <header class="phase-header-invent border-l-4 pl-4">
+                    <h2 class="text-3xl font-bold text-gray-800">Phase 2: Solution Ideation & Development</h2>
+                    <p class="text-gray-600 mt-1">Based on the prioritized need, generate and evaluate innovative solutions.</p>
+                </header>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-semibold text-lg mb-4">Prioritized Need: <span id="invent-need-title" class="text-green-700"></span></h3>
+                    <button id="btn-generate-solutions" onclick="runInvent()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"><i data-lucide="play" class="w-4 h-4 mr-2"></i>Generate Solutions</button>
+                </div>
+                <div id="invent-results" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="lightbulb" class="w-5 h-5 mr-2"></i>Generated Solution Concepts</h3>
+                        <div id="solutions-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                    <div class="text-right">
+                        <button onclick="showPhase('implement')" class="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 flex items-center ml-auto"><i data-lucide="arrow-right" class="w-4 h-4 mr-2"></i>Proceed to Implement Phase</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- IMPLEMENT Phase -->
+            <section id="implement" class="phase-panel hidden space-y-6">
+                <header class="phase-header-implement border-l-4 pl-4">
+                    <h2 class="text-3xl font-bold text-gray-800">Phase 3: Business Strategy & Go-to-Market</h2>
+                    <p class="text-gray-600 mt-1">Develop a robust business plan for the selected solution.</p>
+                </header>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-semibold text-lg mb-4">Selected Solution: <span id="implement-solution-title" class="text-orange-700"></span></h3>
+                    <button id="btn-generate-plan" onclick="runImplement()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"><i data-lucide="play" class="w-4 h-4 mr-2"></i>Generate Implementation Plan</button>
+                </div>
+                <div id="implement-results" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="briefcase" class="w-5 h-5 mr-2"></i>Business Model Canvas</h3>
+                        <div id="business-canvas" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="shield" class="w-5 h-5 mr-2"></i>Regulatory & Go-to-Market</h3>
+                        <div id="go-to-market" class="space-y-4"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Multi-Agent Debate Modal -->
+            <div id="debate-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center z-30">
+                <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
+                    <div class="border-b pb-4 mb-4 flex justify-between items-center">
+                        <h3 class="font-semibold text-lg">Multi-Agent Debate</h3>
+                        <button onclick="closeDebate()" class="text-gray-500 hover:text-gray-800"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    </div>
+                    <div id="debate-log" class="space-y-6 overflow-y-auto pr-4 flex-grow"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const appState = {
+            currentPhase: 'identify',
+            needs: [],
+            solutions: [],
+            plan: {},
+        };
+
+        const debateMessages = [
+            { agent: 'Medical Expert', avatar: 'ME', color: 'bg-pink-500', role: 'agent-medical', text: 'From a clinical standpoint, the key is ensuring data privacy (HIPAA compliance) and providing evidence-based recommendations. The risk of incorrect advice is significant.' },
+            { agent: 'Tech Engineer', avatar: 'TE', color: 'bg-purple-500', role: 'agent-technical', text: 'Technically, this is feasible. We can leverage existing ML frameworks for personalization. The main challenge is seamless integration with various EMR/EHR systems via FHIR APIs.' },
+            { agent: 'Business Analyst', avatar: 'BA', color: 'bg-cyan-500', role: 'agent-business', text: 'The SaaS model is strong. Market analysis shows a projected 25% YoY growth in the digital health coaching space. We should target insurance companies for B2B2C partnerships.' },
+            { agent: 'Devil\'s Advocate', avatar: 'DA', color: 'bg-gray-500', role: 'agent-advocate', text: 'Are we underestimating the user adoption challenges, especially in the elderly population? What if a major tech company like Apple or Google enters this space with a free, integrated solution?' },
+            { agent: 'Patient Advocate', avatar: 'PA', color: 'bg-red-500', role: 'agent-patient', text: 'The interface must be extremely simple. We need to consider users with low tech literacy or physical impairments. Voice commands and large text are essential.' }
+        ];
+
+        function showPhase(phaseId) {
+            appState.currentPhase = phaseId;
+            document.querySelectorAll('.phase-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(phaseId).classList.remove('hidden');
+
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'completed'));
+            if (phaseId === 'identify') {
+                document.getElementById('step-identify').classList.add('active');
+            } else if (phaseId === 'invent') {
+                document.getElementById('step-identify').classList.add('completed');
+                document.getElementById('step-invent').classList.add('active');
+            } else if (phaseId === 'implement') {
+                document.getElementById('step-identify').classList.add('completed');
+                document.getElementById('step-invent').classList.add('completed');
+                document.getElementById('step-implement').classList.add('active');
+            }
+        }
+
+        function showDebate() {
+            const modal = document.getElementById('debate-modal');
+            const log = document.getElementById('debate-log');
+            log.innerHTML = '<p class="text-center text-gray-500">Agents are gathering to discuss...</p>';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            let i = 0;
+            function postMessage() {
+                if (i === 0) log.innerHTML = '';
+                if (i < debateMessages.length) {
+                    const msg = debateMessages[i];
+                    log.innerHTML += `
+                        <div class="flex items-start gap-4 animate-fade-in">
+                            <div class="agent-avatar ${msg.color}">${msg.avatar}</div>
+                            <div>
+                                <p class="font-bold ${msg.role}">${msg.agent}</p>
+                                <div class="bg-gray-100 p-3 rounded-lg mt-1">
+                                    <p class="text-sm">${msg.text}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                    log.scrollTop = log.scrollHeight;
+                    i++;
+                    setTimeout(postMessage, 1500 + Math.random() * 1000);
+                } else {
+                     log.innerHTML += '<p class="text-center font-semibold text-green-600 mt-4">Debate concluded.</p>';
+                }
+            }
+            setTimeout(postMessage, 1000);
+        }
+
+        function closeDebate() {
+            document.getElementById('debate-modal').classList.add('hidden');
+            document.getElementById('debate-modal').classList.remove('flex');
+        }
+
+        function runIdentify() {
+            const btn = document.getElementById('btn-analyze-needs');
+            const context = document.getElementById('identify-context').value;
+            if (!context.trim()) {
+                alert('Please provide a scenario description.');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Analyzing...';
+            
+            setTimeout(() => {
+                appState.needs = [
+                    { name: 'Improve Medication Adherence', impact: 5, market: 5, feasibility: 4 },
+                    { name: 'Reduce Hospital Readmissions', impact: 4, market: 4, feasibility: 3 },
+                    { name: 'Early Sepsis Detection', impact: 5, market: 3, feasibility: 3 },
+                ];
+                renderIdentifyResults();
+                document.getElementById('identify-results').classList.remove('hidden');
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i> Analysis Complete';
+                lucide.createIcons();
+                showDebate();
+            }, 2500);
+        }
+
+        function renderIdentifyResults() {
+            const needsList = document.getElementById('needs-list');
+            const needsMatrix = document.getElementById('needs-matrix');
+            needsList.innerHTML = '';
+            needsMatrix.innerHTML = '';
+
+            appState.needs.forEach(need => {
+                const overall = Math.round((need.impact + need.market + need.feasibility) / 3);
+                needsList.innerHTML += `
+                    <div class="p-4 border rounded-lg">
+                        <h4 class="font-bold">${need.name}</h4>
+                        <div class="mt-2 flex gap-2">
+                            <span class="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Impact: ${'⭐'.repeat(need.impact)}</span>
+                            <span class="text-xs font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full">Market: ${'⭐'.repeat(need.market)}</span>
+                        </div>
+                    </div>`;
+                needsMatrix.innerHTML += `
+                    <tr class="bg-white border-b">
+                        <td class="px-4 py-3 font-medium">${need.name}</td>
+                        <td class="px-4 py-3 text-center">${'⭐'.repeat(need.impact)}</td>
+                        <td class="px-4 py-3 text-center">${'⭐'.repeat(need.market)}</td>
+                        <td class="px-4 py-3 text-center">${'⭐'.repeat(need.feasibility)}</td>
+                        <td class="px-4 py-3 text-center font-bold">${'⭐'.repeat(overall)}</td>
+                    </tr>`;
+            });
+        }
+
+        function runInvent() {
+            const btn = document.getElementById('btn-generate-solutions');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Generating...';
+            document.getElementById('invent-need-title').innerText = `"${appState.needs[0].name}"`;
+
+            setTimeout(() => {
+                appState.solutions = [
+                    { name: 'AI-Powered Patient Companion App', description: 'A mobile app using AI for personalized reminders and health tips.', type: 'Software' },
+                    { name: 'Smart Pill Dispenser with IoT', description: 'An automated dispenser that tracks usage and alerts caregivers.', type: 'Hardware + SaaS' }
+                ];
+                renderInventResults();
+                document.getElementById('invent-results').classList.remove('hidden');
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i> Solutions Generated';
+                lucide.createIcons();
+                showDebate();
+            }, 2500);
+        }
+
+        function renderInventResults() {
+            const solutionsList = document.getElementById('solutions-list');
+            solutionsList.innerHTML = '';
+            appState.solutions.forEach(sol => {
+                solutionsList.innerHTML += `
+                    <div class="p-4 border rounded-lg">
+                        <h4 class="font-bold">${sol.name}</h4>
+                        <p class="text-sm text-gray-600 mt-1">${sol.description}</p>
+                        <div class="mt-2">
+                            <span class="text-xs font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full">${sol.type}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function runImplement() {
+            const btn = document.getElementById('btn-generate-plan');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Generating...';
+            document.getElementById('implement-solution-title').innerText = `"${appState.solutions[0].name}"`;
+
+            setTimeout(() => {
+                appState.plan = {
+                    'Key Partners': 'Hospitals, Insurance Companies, Pharmacies',
+                    'Value Proposition': 'Improve patient outcomes and reduce healthcare costs through better medication adherence.',
+                    'Customer Segments': 'Elderly patients, Caregivers, Healthcare providers.',
+                    'Cost Structure': 'Hardware manufacturing, Software R&D, Cloud hosting, Marketing',
+                    'Revenue Streams': 'Device sales, Monthly subscription fee (SaaS)',
+                    'Regulatory Pathway': 'FDA 510(k) clearance for Class II Medical Device.',
+                    'Go-to-Market': 'Initial launch in partnership with 3 large hospital networks. Direct-to-consumer marketing in Year 2.'
+                };
+                renderImplementResults();
+                document.getElementById('implement-results').classList.remove('hidden');
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-2"></i> Plan Generated';
+                lucide.createIcons();
+                showDebate();
+            }, 2500);
+        }
+
+        function renderImplementResults() {
+            const canvas = document.getElementById('business-canvas');
+            const gtm = document.getElementById('go-to-market');
+            canvas.innerHTML = '';
+            gtm.innerHTML = '';
+
+            const canvasItems = ['Key Partners', 'Value Proposition', 'Customer Segments', 'Cost Structure', 'Revenue Streams'];
+            canvasItems.forEach(item => {
+                canvas.innerHTML += `
+                    <div class="border p-4 rounded-lg bg-gray-50">
+                        <h4 class="font-bold mb-2 text-gray-700">${item}</h4>
+                        <p>${appState.plan[item]}</p>
+                    </div>`;
+            });
+
+            gtm.innerHTML = `
+                <div class="border p-4 rounded-lg bg-orange-50">
+                    <h4 class="font-bold mb-2 text-orange-800">Regulatory Pathway</h4>
+                    <p>${appState.plan['Regulatory Pathway']}</p>
+                </div>
+                <div class="border p-4 rounded-lg bg-orange-50 mt-4">
+                    <h4 class="font-bold mb-2 text-orange-800">Go-to-Market Strategy</h4>
+                    <p>${appState.plan['Go-to-Market']}</p>
+                </div>`;
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            showPhase('identify');
+        });
+
+    </script>
+</body>
+</html>

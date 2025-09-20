@@ -105,3 +105,12 @@ class DebateUpdate(BaseModel):
     type: str  # "agent_message", "consensus_update", "phase_change", etc.
     data: Dict[str, Any]
     timestamp: datetime
+
+class MultiAgentDebateRequest(BaseModel):
+    """Request for multi-agent debate session"""
+    topic: str = Field(..., min_length=10, max_length=1000)
+    phase: str = Field(default="identify", description="Biodesign phase (identify, invent, implement)")
+    active_agents: Optional[List[str]] = Field(None, description="List of agent IDs to participate")
+    max_rounds: int = Field(default=5, ge=1, le=20)
+    consensus_threshold: float = Field(default=0.8, ge=0.0, le=1.0)
+    context_data: Optional[Dict[str, Any]] = Field(None, description="Additional context for the debate")

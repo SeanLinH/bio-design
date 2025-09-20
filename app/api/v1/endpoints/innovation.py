@@ -12,12 +12,15 @@ import json
 from app.models.innovation import (
     InnovationSession, InnovationPhase, PhaseStatus, 
     StartPhaseRequest, PhaseProgressUpdate, NeedItem, 
-    SolutionConcept, ImplementationPlan, MermaidDiagramRequest
+    SolutionConcept, ImplementationPlan, MermaidDiagramRequest,
+    CreateInnovationSessionRequest
 )
+from app.models.multimodal import DocumentUploadResponse, AnalysisType
 from app.services.innovation_service import InnovationService
 from app.services.rag_service import RAGService
 from app.services.mermaid_service import MermaidService
-from app.dependencies import get_innovation_service, get_rag_service, get_mermaid_service
+from app.services.multimodal_service import MultimodalService
+from app.dependencies import get_innovation_service, get_rag_service, get_mermaid_service, get_multimodal_service
 from app.utils.logging import get_logger
 
 router = APIRouter()
@@ -27,20 +30,12 @@ logger = get_logger(__name__)
 
 @router.post("/sessions", response_model=InnovationSession)
 async def create_innovation_session(
-    title: str,
-    description: Optional[str] = None,
-    user_id: Optional[str] = None,
+    request: CreateInnovationSessionRequest,
     innovation_service: InnovationService = Depends(get_innovation_service)
 ):
     """Create a new three-phase innovation session"""
     try:
-        session_id = str(uuid4())
-        session = await innovation_service.create_session(
-            session_id=session_id,
-            title=title,
-            description=description,
-            user_id=user_id
-        )
+        session = await innovation_service.create_session(request)
         return session
     except Exception as e:
         logger.error(f"Error creating innovation session: {str(e)}")
@@ -147,32 +142,65 @@ async def get_identify_results(
         logger.error(f"Error getting IDENTIFY results for session {session_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get results: {str(e)}")
 
-@router.post("/sessions/{session_id}/identify/upload-documents")
-async def upload_documents_for_identify(
+@router.post("/sessions/{session_id}/{phase}/upload-documents", response_model=DocumentUploadResponse)
+async def upload_documents_for_phase(
     session_id: str,
+    phase: InnovationPhase,
     files: List[UploadFile] = File(...),
-    rag_service: RAGService = Depends(get_rag_service)
+    rag_service: RAGService = Depends(get_rag_service),
+    multimodal_service: MultimodalService = Depends(get_multimodal_service)
 ):
-    """Upload documents to enhance IDENTIFY phase analysis"""
+    """Upload documents and multimodal content for any phase analysis"""
     try:
         uploaded_docs = []
+        multimodal_content = []
+        
+        # Separate files by type
+        regular_files = []
+        multimodal_files = []
+        
         for file in files:
+            if file.content_type.startswith('image/') or file.content_type in ['application/dicom']:
+                multimodal_files.append(file)
+            else:
+                regular_files.append(file)
+        
+        # Process regular documents
+        for file in regular_files:
             doc_response = await rag_service.upload_document(
                 file=file,
                 session_id=session_id,
-                phase=InnovationPhase.IDENTIFY
+                phase=phase
             )
             uploaded_docs.append(doc_response)
         
-        return JSONResponse({
-            "message": f"Uploaded {len(uploaded_docs)} documents",
-            "documents": uploaded_docs,
-            "session_id": session_id
-        })
+        # Process multimodal content
+        if multimodal_files:
+            # Determine analysis type based on phase
+            analysis_type_map = {
+                InnovationPhase.IDENTIFY: AnalysisType.MEDICAL_IMAGING,
+                InnovationPhase.INVENT: AnalysisType.DESIGN_ANALYSIS,
+                InnovationPhase.IMPLEMENT: AnalysisType.PATENT_RESEARCH
+            }
+            analysis_type = analysis_type_map.get(phase, AnalysisType.MEDICAL_IMAGING)
+            
+            multimodal_content = await multimodal_service.upload_multimodal_content(
+                session_id=session_id,
+                files=multimodal_files,
+                analysis_type=analysis_type,
+                context=f"Content uploaded for {phase.value} phase"
+            )
+        
+        return DocumentUploadResponse(
+            message=f"Uploaded {len(uploaded_docs)} documents and {len(multimodal_content)} multimodal files",
+            documents=uploaded_docs,
+            multimodal_content=multimodal_content,
+            session_id=session_id
+        )
         
     except Exception as e:
-        logger.error(f"Error uploading documents for session {session_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to upload documents: {str(e)}")
+        logger.error(f"Error uploading content for session {session_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload content: {str(e)}")
 
 # ================== INVENT Phase Endpoints ==================
 

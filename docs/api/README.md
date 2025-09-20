@@ -85,6 +85,8 @@ Form Data:
 - Text Files (.txt, .md)
 - Images (.jpg, .png, .tiff) - for visual analysis
 - Medical Images (.dicom) - for medical imaging analysis
+- Images (.jpg, .png, .tiff) - for visual analysis
+- Medical Images (.dicom) - for medical imaging analysis
 
 #### Upload Multimodal Content
 ```http
@@ -162,6 +164,128 @@ Response:
   ]
 }
 ```
+
+#### Get Multimodal Content Library
+```http
+GET /api/v1/innovation/sessions/{session_id}/multimodal/content?type=medical_imaging&status=completed
+```
+
+Response:
+```json
+{
+  "multimodal_content": [
+    {
+      "content_id": "img_456",
+      "filename": "retinal_scan.jpg",
+      "file_type": "image/jpeg",
+      "analysis_type": "medical_imaging",
+      "processing_status": "completed",
+      "upload_time": "2025-09-12T10:05:00Z",
+      "file_size": 2048576,
+      "dimensions": {"width": 1920, "height": 1080},
+      "extracted_concepts": ["retinal pathology", "diabetes indicators"],
+      "confidence_score": 0.89,
+      "thumbnail_url": "/api/v1/multimodal/img_456/thumbnail"
+    }
+  ],
+  "total_count": 15,
+  "filters_applied": {
+    "type": "medical_imaging",
+    "status": "completed"
+  }
+}
+```
+
+#### Get Multimodal Content Details
+```http
+GET /api/v1/innovation/sessions/{session_id}/multimodal/content/{content_id}
+```
+
+Response:
+```json
+{
+  "content_id": "img_456",
+  "filename": "retinal_scan.jpg",
+  "file_type": "image/jpeg",
+  "analysis_type": "medical_imaging",
+  "processing_status": "completed",
+  "upload_time": "2025-09-12T10:05:00Z",
+  "full_analysis": {
+    "visual_analysis": {
+      "key_findings": ["Retinal microaneurysms detected", "Early diabetic retinopathy signs"],
+      "technical_assessment": "High-resolution imaging shows early-stage pathology",
+      "clinical_significance": "Supports need for early detection systems",
+      "confidence_score": 0.89,
+      "regions_of_interest": [
+        {
+          "region_id": "roi_001",
+          "coordinates": {"x": 450, "y": 320, "width": 120, "height": 80},
+          "finding": "Microaneurysm cluster",
+          "confidence": 0.92
+        }
+      ]
+    },
+    "agent_interpretations": {
+      "medical_expert": "Clinical signs consistent with diabetes progression",
+      "tech_engineer": "Image quality sufficient for AI-based detection algorithms",
+      "business_analyst": "Market opportunity for early detection devices"
+    },
+    "extracted_requirements": [
+      "High-resolution imaging capability",
+      "Real-time image processing",
+      "Clinical-grade accuracy"
+    ]
+  },
+  "annotations": [
+    {
+      "annotation_id": "ann_001",
+      "user_id": "user_123",
+      "coordinates": {"x": 450, "y": 320, "width": 120, "height": 80},
+      "note": "Potential diabetes indicator",
+      "created_at": "2025-09-12T10:15:00Z"
+    }
+  ],
+  "related_documents": ["doc_123", "doc_124"]
+}
+```
+
+#### Add Visual Content Annotations
+```http
+POST /api/v1/innovation/sessions/{session_id}/multimodal/content/{content_id}/annotations
+Content-Type: application/json
+
+{
+  "coordinates": {"x": 450, "y": 320, "width": 120, "height": 80},
+  "annotation_type": "user_highlight" | "ai_finding" | "region_of_interest",
+  "note": "Potential diabetes indicator requiring further analysis",
+  "tags": ["diabetes", "retinal_pathology", "critical"]
+}
+```
+
+#### Update Visual Content Analysis
+```http
+PUT /api/v1/innovation/sessions/{session_id}/multimodal/content/{content_id}/analysis
+Content-Type: application/json
+
+{
+  "analysis_request": "Focus analysis on retinal blood vessel patterns for diabetes indicators",
+  "include_regions": ["roi_001", "roi_002"],
+  "analysis_depth": "detailed" | "standard" | "quick",
+  "agent_focus": ["medical_expert", "tech_engineer"]
+}
+```
+
+#### Delete Multimodal Content
+```http
+DELETE /api/v1/innovation/sessions/{session_id}/multimodal/content/{content_id}
+```
+
+#### Export Visual Analysis Report
+```http
+GET /api/v1/innovation/sessions/{session_id}/multimodal/content/{content_id}/export?format=pdf&include_annotations=true
+```
+
+Response: PDF file download with comprehensive visual analysis report.
 
 #### Query Document Knowledge
 ```http
@@ -818,22 +942,56 @@ Response:
 ```json
 {
   "session_summary": {
-    "total_duration_hours": 2.5,
-    "phases_completed": ["identify", "invent"],
-    "documents_uploaded": 5,
-    "debates_conducted": 3,
-    "consensus_scores": {
-      "identify": 0.89,
-      "invent": 0.82
+    "session_id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "AI-powered Diabetes Detection Device",
+    "total_duration": "PT2H30M",
+    "completion_rate": 85,
+    "phase_breakdown": {
+      "identify": {
+        "status": "completed",
+        "duration": "PT45M",
+        "needs_identified": 12,
+        "priority_needs": 3
+      },
+      "invent": {
+        "status": "completed", 
+        "duration": "PT60M",
+        "solutions_generated": 8,
+        "selected_solutions": 2
+      },
+      "implement": {
+        "status": "in_progress",
+        "duration": "PT25M",
+        "business_models_analyzed": 4
+      }
     }
   },
-  "agent_participation": {
-    "medical_expert": {"arguments": 12, "avg_confidence": 0.87},
-    "tech_engineer": {"arguments": 15, "avg_confidence": 0.91}
+  "agent_performance": {
+    "medical_expert": {
+      "participation_rate": 92,
+      "argument_quality_score": 4.6,
+      "evidence_citations": 15
+    },
+    "tech_engineer": {
+      "participation_rate": 88,
+      "argument_quality_score": 4.4,
+      "evidence_citations": 12
+    },
+    "business_analyst": {
+      "participation_rate": 90,
+      "argument_quality_score": 4.5,
+      "evidence_citations": 18
+    }
   },
-  "document_utilization": {
-    "total_chunks_referenced": 45,
-    "most_referenced_document": "research_paper.pdf"
+  "decision_quality_metrics": {
+    "consensus_level": 0.78,
+    "evidence_strength": 0.82,
+    "stakeholder_alignment": 0.74
+  },
+  "resource_utilization": {
+    "documents_analyzed": 23,
+    "web_searches_performed": 45,
+    "multimodal_content_processed": 8
   }
 }
 ```
@@ -844,6 +1002,429 @@ GET /api/v1/innovation/sessions/{session_id}/export?format=pdf&include_debates=t
 ```
 
 Response: PDF file download with comprehensive session report.
+
+### Business Strategy Analysis
+
+#### Generate Business Strategy Analysis
+```http
+POST /api/v1/innovation/sessions/{session_id}/business-strategy/analyze
+Content-Type: application/json
+
+{
+  "analysis_type": "comprehensive" | "porter_five_forces" | "business_model_canvas" | "pricing_strategy" | "go_to_market",
+  "market_context": {
+    "target_market": "Diabetes monitoring devices",
+    "market_size": "$15.2B",
+    "growth_rate": "8.5%",
+    "key_competitors": ["Dexcom", "Abbott", "Medtronic"]
+  },
+  "solution_context": {
+    "solution_id": "sol_001",
+    "technology_readiness": 6,
+    "regulatory_pathway": "FDA 510(k)"
+  }
+}
+```
+
+Response:
+```json
+{
+  "analysis_id": "biz_analysis_001",
+  "analysis_type": "comprehensive",
+  "generated_at": "2025-09-13T10:15:00Z",
+  "business_strategy": {
+    "executive_summary": "AI-powered diabetes monitoring device presents significant market opportunity...",
+    "porter_five_forces": {
+      "competitive_rivalry": {
+        "intensity": "high",
+        "score": 4.2,
+        "factors": ["Established players with strong R&D", "Price competition"]
+      },
+      "supplier_power": {
+        "intensity": "medium",
+        "score": 3.1,
+        "factors": ["Specialized sensor manufacturers", "AI/ML platform dependencies"]
+      },
+      "buyer_power": {
+        "intensity": "high", 
+        "score": 4.0,
+        "factors": ["Price-sensitive patients", "Insurance reimbursement requirements"]
+      },
+      "threat_of_substitutes": {
+        "intensity": "medium",
+        "score": 2.8,
+        "factors": ["Traditional glucose meters", "Emerging technologies"]
+      },
+      "barriers_to_entry": {
+        "intensity": "high",
+        "score": 4.5,
+        "factors": ["Regulatory requirements", "Capital requirements", "Clinical validation"]
+      }
+    },
+    "business_models": [
+      {
+        "model_type": "B2B2C",
+        "description": "Partner with healthcare providers and insurers",
+        "revenue_streams": [
+          {
+            "type": "subscription",
+            "description": "Monthly monitoring service",
+            "projected_revenue": "$50-80/month per patient"
+          },
+          {
+            "type": "device_sales",
+            "description": "One-time device purchase",
+            "projected_revenue": "$200-300 per device"
+          }
+        ],
+        "target_customers": ["Healthcare systems", "Insurance companies"],
+        "value_proposition": "Improved patient outcomes, reduced healthcare costs"
+      }
+    ],
+    "pricing_strategy": {
+      "pricing_model": "value_based",
+      "device_price_range": "$250-350",
+      "subscription_price_range": "$60-90/month",
+      "competitive_positioning": "Premium positioning with superior accuracy and AI insights"
+    },
+    "go_to_market": {
+      "primary_channels": ["Healthcare partnerships", "Digital health platforms"],
+      "customer_acquisition_strategy": "Clinical evidence generation + KOL engagement",
+      "market_entry_sequence": ["Pilot studies", "Limited launch", "Scaled commercialization"]
+    },
+    "risk_assessment": {
+      "high_risks": ["Regulatory approval delays", "Reimbursement challenges"],
+      "medium_risks": ["Technology adoption barriers", "Competitive response"],
+      "mitigation_strategies": ["Early FDA engagement", "Payer evidence generation"]
+    }
+  },
+  "financial_projections": {
+    "revenue_forecast": {
+      "year_1": "$2.5M",
+      "year_3": "$25M", 
+      "year_5": "$75M"
+    },
+    "market_penetration": {
+      "year_1": "0.1%",
+      "year_3": "1.2%",
+      "year_5": "3.5%"
+    }
+  }
+}
+```
+
+#### Get Business Strategy Analysis
+```http
+GET /api/v1/innovation/sessions/{session_id}/business-strategy/analysis/{analysis_id}
+```
+
+#### Update Business Strategy Parameters
+```http
+PUT /api/v1/innovation/sessions/{session_id}/business-strategy/analysis/{analysis_id}
+Content-Type: application/json
+
+{
+  "market_assumptions": {
+    "market_growth_rate": "9.2%",
+    "price_elasticity": -1.2
+  },
+  "business_model_preferences": ["B2B2C", "SaaS"],
+  "risk_tolerance": "medium"
+}
+```
+
+### Advanced Reports System
+
+#### Generate Comprehensive Innovation Report
+```http
+POST /api/v1/innovation/sessions/{session_id}/reports/generate
+Content-Type: application/json
+
+{
+  "report_type": "innovation_summary" | "business_strategy" | "technical_analysis" | "market_research" | "financial_projection" | "regulatory_roadmap",
+  "target_audience": "investors" | "technical_team" | "regulatory_authorities" | "executive_summary",
+  "include_sections": [
+    "executive_summary",
+    "needs_analysis", 
+    "solution_overview",
+    "market_analysis",
+    "technical_feasibility",
+    "business_model",
+    "financial_projections",
+    "risk_assessment",
+    "implementation_roadmap",
+    "appendices"
+  ],
+  "format_preferences": {
+    "include_charts": true,
+    "include_concept_maps": true,
+    "include_agent_debates": false,
+    "detail_level": "comprehensive" | "summary" | "executive"
+  }
+}
+```
+
+Response:
+```json
+{
+  "report_id": "report_001",
+  "status": "generating",
+  "estimated_completion": "PT5M",
+  "progress_webhook": "/api/v1/ws/reports/report_001/progress"
+}
+```
+
+#### Get Generated Report
+```http
+GET /api/v1/innovation/sessions/{session_id}/reports/{report_id}
+```
+
+Response:
+```json
+{
+  "report_id": "report_001",
+  "title": "AI-Powered Diabetes Detection Device - Innovation Analysis Report",
+  "report_type": "innovation_summary",
+  "status": "completed",
+  "generated_at": "2025-09-13T10:30:00Z",
+  "metadata": {
+    "page_count": 45,
+    "word_count": 12500,
+    "charts_included": 8,
+    "concept_maps_included": 4
+  },
+  "sections": [
+    {
+      "section_id": "exec_summary",
+      "title": "Executive Summary",
+      "page_range": "1-3",
+      "key_insights": [
+        "Market opportunity of $2.1B in addressable market",
+        "Technical feasibility score: 8.2/10",
+        "Regulatory pathway: FDA 510(k) with 12-18 month timeline"
+      ]
+    },
+    {
+      "section_id": "needs_analysis", 
+      "title": "Clinical Needs Analysis",
+      "page_range": "4-12",
+      "key_insights": [
+        "75% of diabetes patients struggle with current monitoring frequency",
+        "Healthcare providers need better predictive analytics"
+      ]
+    }
+  ],
+  "download_urls": {
+    "pdf": "/api/v1/reports/report_001/download?format=pdf",
+    "docx": "/api/v1/reports/report_001/download?format=docx",
+    "html": "/api/v1/reports/report_001/download?format=html"
+  },
+  "sharing_url": "/api/v1/reports/report_001/share?token=abc123"
+}
+```
+
+#### List Generated Reports
+```http
+GET /api/v1/innovation/sessions/{session_id}/reports?status=completed&type=innovation_summary&limit=20
+```
+
+#### Update Report Content
+```http
+PUT /api/v1/innovation/sessions/{session_id}/reports/{report_id}
+Content-Type: application/json
+
+{
+  "sections_to_update": ["financial_projections"],
+  "updated_data": {
+    "market_assumptions": {
+      "growth_rate": "9.5%",
+      "market_penetration": "4.2%"
+    }
+  },
+  "regenerate_charts": true
+}
+```
+
+#### Add Report Annotations
+```http
+POST /api/v1/innovation/sessions/{session_id}/reports/{report_id}/annotations
+Content-Type: application/json
+
+{
+  "section_id": "market_analysis",
+  "annotation": {
+    "type": "comment" | "highlight" | "note",
+    "content": "Consider updating market size based on latest industry report",
+    "author": "user_123",
+    "position": {"page": 8, "paragraph": 3}
+  }
+}
+```
+
+#### Export Report for Collaboration
+```http
+GET /api/v1/innovation/sessions/{session_id}/reports/{report_id}/export?format=collaborative&platform=sharepoint
+```
+
+**Supported Collaboration Platforms:**
+- `sharepoint` - Microsoft SharePoint format
+- `google_docs` - Google Docs compatible format  
+- `notion` - Notion workspace format
+- `confluence` - Atlassian Confluence format
+
+### Dashboard & Analytics APIs
+
+#### Get Dashboard Overview
+```http
+GET /api/v1/dashboard/overview?user_id=user_123&time_range=30d
+```
+
+Response:
+```json
+{
+  "user_summary": {
+    "active_sessions": 3,
+    "completed_sessions": 12,
+    "total_innovations": 15
+  },
+  "recent_activity": [
+    {
+      "session_id": "session_001",
+      "activity_type": "phase_completed",
+      "phase": "identify",
+      "timestamp": "2025-09-13T09:30:00Z"
+    }
+  ],
+  "performance_metrics": {
+    "average_session_duration": "PT2H15M",
+    "consensus_achievement_rate": 0.82,
+    "innovation_success_rate": 0.67
+  },
+  "upcoming_milestones": [
+    {
+      "session_id": "session_002",
+      "milestone": "invent_phase_completion",
+      "estimated_date": "2025-09-15T14:00:00Z"
+    }
+  ]
+}
+```
+
+#### Get Advanced Analytics
+```http
+GET /api/v1/analytics/innovation-performance?timeframe=6m&metrics=success_rate,efficiency,quality
+```
+
+Response:
+```json
+{
+  "timeframe": "6m",
+  "data_points": 180,
+  "metrics": {
+    "innovation_success_rate": {
+      "current_value": 0.68,
+      "trend": "increasing",
+      "historical_data": [
+        {"date": "2025-03-01", "value": 0.61},
+        {"date": "2025-06-01", "value": 0.65},
+        {"date": "2025-09-01", "value": 0.68}
+      ]
+    },
+    "session_efficiency": {
+      "average_duration": "PT2H22M",
+      "trend": "improving",
+      "benchmark_comparison": "+15% vs industry standard"
+    },
+    "decision_quality": {
+      "consensus_strength": 0.78,
+      "evidence_base_score": 0.84,
+      "stakeholder_alignment": 0.72
+    }
+  },
+  "insights": [
+    {
+      "type": "trend",
+      "description": "Innovation success rate improving by 3.2% per quarter",
+      "confidence": 0.89
+    },
+    {
+      "type": "recommendation", 
+      "description": "Consider extending IDENTIFY phase duration for higher success rates",
+      "evidence": "Sessions with 20% longer IDENTIFY phase show 25% higher success"
+    }
+  ]
+}
+```
+
+#### Get Team Collaboration Analytics
+```http
+GET /api/v1/analytics/team-collaboration/{session_id}
+```
+
+#### Get Agent Performance Analytics  
+```http
+GET /api/v1/analytics/agent-performance?agent_id=medical_expert&timeframe=3m
+```
+
+### Knowledge Management APIs
+
+#### Create Knowledge Base Entry
+```http
+POST /api/v1/knowledge/entries
+Content-Type: application/json
+
+{
+  "title": "Best Practices for Diabetes Device Validation",
+  "content": "Detailed content...",
+  "tags": ["diabetes", "medical_devices", "validation", "FDA"],
+  "source_session": "session_001",
+  "knowledge_type": "best_practice" | "lesson_learned" | "methodology" | "regulation"
+}
+```
+
+#### Query Knowledge Base
+```http
+POST /api/v1/knowledge/search
+Content-Type: application/json
+
+{
+  "query": "FDA approval process for continuous glucose monitors",
+  "filters": {
+    "tags": ["FDA", "medical_devices"],
+    "knowledge_type": ["regulation", "best_practice"],
+    "date_range": {
+      "start": "2024-01-01",
+      "end": "2025-09-13"
+    }
+  },
+  "limit": 10
+}
+```
+
+#### Get Intelligent Recommendations
+```http
+GET /api/v1/knowledge/recommendations?session_id=session_001&phase=implement
+```
+
+Response:
+```json
+{
+  "recommendations": [
+    {
+      "type": "similar_project",
+      "title": "Successful diabetes monitoring device launch case study",
+      "relevance_score": 0.87,
+      "key_learnings": ["Early payer engagement critical", "Clinical evidence requirements"]
+    },
+    {
+      "type": "expert_contact",
+      "expert": "Dr. Sarah Chen - Regulatory Affairs Specialist",
+      "expertise": "FDA medical device approvals",
+      "availability": "available"
+    }
+  ]
+}
+```
 
 ## Error Handling
 
@@ -992,20 +1573,60 @@ Error responses include detailed messages:
   "file_type": "string (MIME type)",
   "analysis_type": "medical_imaging|design_analysis|patent_research|concept_mapping",
   "processing_status": "processing|completed|failed",
+  "upload_time": "datetime",
+  "file_size": "integer (bytes)",
+  "dimensions": {
+    "width": "integer",
+    "height": "integer"
+  },
   "extracted_concepts": ["string"],
   "visual_analysis": {
     "key_findings": ["string"],
     "technical_assessment": "string",
     "clinical_significance": "string",
-    "confidence_score": "float (0.0-1.0)"
+    "confidence_score": "float (0.0-1.0)",
+    "regions_of_interest": [
+      {
+        "region_id": "string",
+        "coordinates": {
+          "x": "integer",
+          "y": "integer", 
+          "width": "integer",
+          "height": "integer"
+        },
+        "finding": "string",
+        "confidence": "float (0.0-1.0)"
+      }
+    ]
   },
   "agent_interpretations": {
     "medical_expert": "string",
     "tech_engineer": "string",
-    "business_analyst": "string"
+    "business_analyst": "string",
+    "regulatory_agent": "string",
+    "ethicist": "string",
+    "patient_advocate": "string"
   },
   "extracted_requirements": ["string"],
-  "related_documents": ["string"]
+  "annotations": [
+    {
+      "annotation_id": "string",
+      "user_id": "string",
+      "coordinates": {
+        "x": "integer",
+        "y": "integer",
+        "width": "integer", 
+        "height": "integer"
+      },
+      "annotation_type": "user_highlight|ai_finding|region_of_interest",
+      "note": "string",
+      "tags": ["string"],
+      "created_at": "datetime"
+    }
+  ],
+  "related_documents": ["string"],
+  "thumbnail_url": "string",
+  "full_resolution_url": "string"
 }
 ```
 
@@ -1246,6 +1867,105 @@ debateWs.onmessage = (event) => {
 };
 ```
 
+### Multimodal Content Integration Example
+
+```javascript
+// Complete workflow with visual content analysis
+const sessionResponse = await fetch('/api/v1/innovation/sessions', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    title: "AI-powered Diabetic Retinopathy Detection System",
+    description: "Early detection system using retinal imaging analysis",
+    user_id: "user_123"
+  })
+});
+const session = await sessionResponse.json();
+
+// 1. Upload multimodal content for IDENTIFY phase
+const imageFiles = [
+  new File([retinalScanBlob], 'diabetic_retina_sample.jpg', {type: 'image/jpeg'}),
+  new File([normalRetinaBlob], 'normal_retina_sample.jpg', {type: 'image/jpeg'}),
+  new File([patentDiagramBlob], 'existing_device_patent.png', {type: 'image/png'})
+];
+
+const uploadResponse = await fetch(`/api/v1/innovation/sessions/${session.session_id}/multimodal/upload`, {
+  method: 'POST',
+  body: (() => {
+    const formData = new FormData();
+    imageFiles.forEach(file => formData.append('files', file));
+    formData.append('analysis_type', 'medical_imaging');
+    formData.append('context', 'Diabetic retinopathy detection research materials');
+    return formData;
+  })()
+});
+
+const uploadedContent = await uploadResponse.json();
+console.log('Uploaded multimodal content:', uploadedContent.multimodal_content);
+
+// 2. Analyze visual content with AI agents
+const analysisResponse = await fetch(`/api/v1/innovation/sessions/${session.session_id}/multimodal/analyze`, {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    content_ids: uploadedContent.multimodal_content.map(content => content.content_id),
+    analysis_request: "Compare diabetic vs normal retinal images to identify key diagnostic features for device development",
+    include_agent_perspectives: true
+  })
+});
+
+const analysis = await analysisResponse.json();
+console.log('Medical Expert Analysis:', analysis.visual_analysis.agent_interpretations.medical_expert);
+console.log('Technical Requirements:', analysis.extracted_requirements);
+
+// 3. Add user annotations to key findings
+const annotationResponse = await fetch(`/api/v1/innovation/sessions/${session.session_id}/multimodal/content/${uploadedContent.multimodal_content[0].content_id}/annotations`, {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    coordinates: {x: 450, y: 320, width: 120, height: 80},
+    annotation_type: "region_of_interest",
+    note: "Critical diagnostic region - microaneurysm cluster",
+    tags: ["diabetes_indicator", "high_priority", "device_target"]
+  })
+});
+
+// 4. Start IDENTIFY phase with multimodal context
+await fetch(`/api/v1/innovation/sessions/${session.session_id}/identify/start`, {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    context_data: {
+      target_population: "Diabetic patients requiring regular screening",
+      focus_areas: ["early detection", "automated analysis", "point-of-care"],
+      visual_context_enabled: true
+    },
+    uploaded_documents: uploadedContent.documents.map(doc => doc.document_id),
+    multimodal_content: uploadedContent.multimodal_content.map(content => content.content_id)
+  })
+});
+
+// 5. Monitor phase with multimodal integration
+const progressWs = new WebSocket(`ws://localhost:8000/api/v1/ws/innovation/${session.session_id}`);
+progressWs.onmessage = (event) => {
+  const update = JSON.parse(event.data);
+  
+  if (update.type === 'multimodal_analysis_complete') {
+    console.log('Visual analysis integrated into agent discussions');
+    console.log('Key visual insights:', update.visual_insights);
+  }
+  
+  if (update.type === 'agent_debate_visual_reference') {
+    console.log(`${update.agent_id} referenced visual content:`, update.referenced_content);
+  }
+};
+
+// 6. Export comprehensive analysis report
+const reportResponse = await fetch(`/api/v1/innovation/sessions/${session.session_id}/multimodal/content/${uploadedContent.multimodal_content[0].content_id}/export?format=pdf&include_annotations=true`);
+const reportBlob = await reportResponse.blob();
+// Download PDF report with visual analysis and agent insights
+```
+
 ## Best Practices
 
 ### Document Upload Guidelines
@@ -1287,6 +2007,45 @@ debateWs.onmessage = (event) => {
    - Use commenting system for discussion without direct edits
    - Regularly save versions during collaborative sessions
    - Apply optimization suggestions incrementally
+
+### Multimodal Content Management Guidelines
+
+1. **Content Type Optimization**
+   - **Medical Imaging** (`.jpg`, `.png`, `.tiff`, `.dicom`):
+     - Ensure HIPAA compliance for patient data
+     - Use high-resolution images (minimum 1920x1080) for accurate analysis
+     - Include relevant medical context in upload descriptions
+     - Tag with specific medical conditions or anatomy regions
+   
+   - **Design & Technical Content** (`.jpg`, `.png`, `.svg`, `.pdf`):
+     - Upload CAD files, technical drawings, and design sketches
+     - Include dimensional information and scale references
+     - Provide context about design intent and constraints
+     - Use clear, high-contrast images for better AI analysis
+
+   - **Patent & Research Content** (`.jpg`, `.png`, `.pdf`):
+     - Include patent numbers and filing dates in metadata
+     - Upload both original diagrams and annotated versions
+     - Provide competitive landscape context
+     - Tag with relevant technology categories
+
+2. **Analysis Type Selection**
+   - **medical_imaging**: For clinical validation and diagnostic features
+   - **design_analysis**: For technical feasibility and engineering requirements  
+   - **patent_research**: For intellectual property landscape analysis
+   - **concept_mapping**: For hand-drawn ideas and workflow diagrams
+
+3. **Quality and Processing Guidelines**
+   - **Image Quality**: Minimum 1MB file size for detailed analysis
+   - **Supported Formats**: JPEG, PNG, TIFF for standard images; DICOM for medical
+   - **File Naming**: Use descriptive names indicating content and source
+   - **Batch Upload**: Group related images by analysis type for efficiency
+
+4. **Annotation Best Practices**
+   - **User Annotations**: Highlight critical regions before agent analysis
+   - **Collaborative Tagging**: Use consistent tag vocabulary across team members
+   - **Context Notes**: Provide detailed descriptions for complex visual content
+   - **Region Selection**: Be precise with coordinate selection for ROI analysis
 
 ### Multi-Agent Debate Optimization
 

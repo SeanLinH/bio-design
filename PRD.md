@@ -9,7 +9,9 @@
 ### Core Innovation Framework - Double Diamond Process
 基於設計思維雙鑽石模型，系統提供三個關鍵階段：
 
-#### 🔍 **Identify Phase (第一個鑽石 - 問題探索與收斂)**
+#### 🔍 **Identify Phase (第一個鑽石### 3.5 User Experience Requirements
+
+#### 3.5.1 Phase Navigation Interface問題探索與收斂)**
 - **發散探索**：多角度識別未滿足的醫療需求
 - **辯論評估**：專業代理深度辯論各需求的重要性和可行性
 - **優先排序**：基於多維度評估選擇最有價值的需求進行開發
@@ -346,7 +348,46 @@
 - **FR-6.8 Auto-layout Optimization:** AI-powered diagram layout optimization for clarity and visual appeal
 - **FR-6.9 Template Library:** Pre-built templates for common biomedical innovation scenarios
 
-### 3.4 User Experience Requirements
+### 3.4 Advanced Analytics & Business Intelligence
+
+#### 3.4.1 智能商業策略分析引擎
+- **FR-7.1 Porter五力分析:** 自動進行競爭環境分析，評估市場吸引力和競爭強度
+- **FR-7.2 商業模式設計:** 支援多種商業模式（B2B、B2C、SaaS、訂閱制、租賃制）的分析和比較
+- **FR-7.3 定價策略分析:** 基於成本結構、競爭對手和市場定位的智能定價建議
+- **FR-7.4 收益流建模:** 多元化收益流分析，包含一次性收費、訂閱、使用量計費、佣金等模式
+- **FR-7.5 風險評估矩陣:** 全面的商業風險識別和評估，包含市場、技術、監管、財務風險
+- **FR-7.6 Go-to-Market策略:** 詳細的市場進入策略，包含客戶獲取、銷售渠道、行銷策略
+- **FR-7.7 財務建模引擎:** 詳細的財務預測，包含收入預測、成本結構、投資回報率分析
+- **FR-7.8 競爭對手分析:** 自動化競爭對手監控和比較分析，包含產品特性、定價、市場佔有率
+
+#### 3.4.2 智能報告生成系統
+- **FR-8.1 階段性報告自動生成:** 每個創新階段完成後自動生成詳細報告，包含決策軌跡和關鍵洞察
+- **FR-8.2 綜合創新報告:** 跨三個階段的完整創新項目報告，包含執行摘要、技術分析、市場策略等
+- **FR-8.3 定制化報告模板:** 支援不同利害關係人的報告需求（投資者、技術團隊、監管機構等）
+- **FR-8.4 互動式報告儀表板:** 包含圖表、數據視覺化和可鑽取分析的動態報告界面
+- **FR-8.5 報告協作功能:** 支援報告審閱、註釋、版本管理和團隊協作
+- **FR-8.6 智能洞察提取:** AI驅動的關鍵洞察識別和趨勢分析
+- **FR-8.7 報告版本管理:** 完整的報告版本控制和變更追蹤
+- **FR-8.8 多格式輸出:** 支援PDF、Word、PowerPoint、HTML等多種格式輸出
+
+#### 3.4.3 Dashboard與績效分析平台
+- **FR-9.1 即時進度監控:** 創新流程的實時進度追蹤和里程碑管理儀表板
+- **FR-9.2 多維度績效分析:** 包含時間效率、決策品質、共識程度等多項績效指標
+- **FR-9.3 代理活動分析:** 各AI代理的參與度、貢獻品質和專業領域表現分析
+- **FR-9.4 用戶行為分析:** 用戶與系統互動模式分析，用於改善用戶體驗
+- **FR-9.5 歷史項目對比:** 多個創新項目的比較分析，識別成功模式和改進空間
+- **FR-9.6 預測性分析:** 基於歷史數據預測項目成功機率和潛在風險
+- **FR-9.7 KPI追蹤:** 關鍵績效指標的定義、追蹤和可視化
+- **FR-9.8 團隊協作分析:** 團隊成員參與度和協作效果分析
+
+#### 3.4.4 知識管理與學習系統
+- **FR-10.1 組織知識庫:** 建立和維護組織內部的生醫創新知識庫
+- **FR-10.2 最佳實踐萃取:** 從成功項目中自動萃取最佳實踐和經驗教訓
+- **FR-10.3 智能推薦引擎:** 基於歷史項目和當前脈絡的智能建議系統
+- **FR-10.4 學習路徑規劃:** 為用戶提供個性化的生醫創新學習路徑
+- **FR-10.5 專家網絡連接:** 連接內部外部專家，支援項目諮詢和指導
+
+### 3.5 User Experience Requirements
 
 #### 3.4.1 Phase Navigation Interface
 - **FR-7.1 Progress Tracking:** Clear visual indicators showing current phase, completed milestones, and next steps
@@ -355,11 +396,11 @@
 - **FR-7.4 Save and Resume:** Session persistence allowing users to save progress and continue work later
 - **FR-7.5 Collaborative Access:** Multiple team members can contribute to the same innovation project
 
-#### 3.4.2 Real-time Interaction
-- **FR-8.1 WebSocket Integration:** Live updates during agent debates and analysis processes
-- **FR-8.2 Interactive Debate Viewing:** Users can observe agent debates in real-time with ability to ask clarifying questions
-- **FR-8.3 Manual Intervention:** Users can guide agent discussions, provide additional context, or request specific analyses
-- **FR-8.4 Export and Sharing:** Comprehensive reports generated for each phase with ability to share with stakeholders
+#### 3.5.2 Real-time Interaction
+- **FR-11.1 WebSocket Integration:** Live updates during agent debates and analysis processes
+- **FR-11.2 Interactive Debate Viewing:** Users can observe agent debates in real-time with ability to ask clarifying questions
+- **FR-11.3 Manual Intervention:** Users can guide agent discussions, provide additional context, or request specific analyses
+- **FR-11.4 Export and Sharing:** Comprehensive reports generated for each phase with ability to share with stakeholders
 
 ## 4. User Stories
 

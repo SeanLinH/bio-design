@@ -3,14 +3,9 @@ API router configuration
 """
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import debate, agents, evaluation, health, websocket, innovation
+from app.api.v1.endpoints import debate, agents, evaluation, health, websocket, innovation, multi_agent, multimodal
 
-# Import multi-agent endpoints if available
-try:
-    from app.api.v1.endpoints import multi_agent
-    MULTI_AGENT_AVAILABLE = True
-except ImportError:
-    MULTI_AGENT_AVAILABLE = False
+
 
 api_router = APIRouter()
 
@@ -21,7 +16,5 @@ api_router.include_router(agents.router, prefix="/v1/agents", tags=["agents"])
 api_router.include_router(evaluation.router, prefix="/v1/evaluation", tags=["evaluation"])
 api_router.include_router(websocket.router, prefix="/v1/ws", tags=["websocket"])
 api_router.include_router(innovation.router, prefix="/v1/innovation", tags=["innovation"])
-
-# Include multi-agent router if available
-if MULTI_AGENT_AVAILABLE:
-    api_router.include_router(multi_agent.router, tags=["multi-agent"])
+api_router.include_router(multi_agent.router, prefix="/v1/multi-agent", tags=["multi-agent"])
+api_router.include_router(multimodal.router, prefix="/v1/innovation", tags=["multimodal"])

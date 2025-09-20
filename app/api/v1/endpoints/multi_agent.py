@@ -11,25 +11,19 @@ from datetime import datetime
 from app.core.agents.multi_agent_system import MultiAgentDebateSystem
 from app.core.workflow.biodesign_workflow import BiodesignWorkflowManager, WorkflowPhase
 from app.models.innovation import InnovationRequest, InnovationResponse
+from app.models.debate import MultiAgentDebateRequest
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/api/v1/multi-agent", tags=["Multi-Agent System"])
+router = APIRouter()
 
 # Initialize systems
 multi_agent_system = MultiAgentDebateSystem()
 workflow_manager = BiodesignWorkflowManager()
 
 @router.post("/debate/start", response_model=Dict[str, Any])
-async def start_debate(
-    topic: str,
-    phase: str = "identify",
-    active_agents: Optional[List[str]] = None,
-    max_rounds: int = 5,
-    consensus_threshold: float = 0.8,
-    context_data: Optional[Dict[str, Any]] = None
-):
+async def start_debate(request: MultiAgentDebateRequest):
     """
     Start a new multi-agent debate session
     
@@ -50,12 +44,12 @@ async def start_debate(
         
         result = await multi_agent_system.start_debate(
             session_id=session_id,
-            topic=topic,
-            phase=phase,
-            context_data=context_data or {},
-            active_agents=active_agents,
-            max_rounds=max_rounds,
-            consensus_threshold=consensus_threshold
+            topic=request.topic,
+            phase=request.phase,
+            context_data=request.context_data or {},
+            active_agents=request.active_agents,
+            max_rounds=request.max_rounds,
+            consensus_threshold=request.consensus_threshold
         )
         
         return {

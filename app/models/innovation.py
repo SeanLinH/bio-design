@@ -334,8 +334,9 @@ class MermaidDiagramResponse(BaseModel):
 
 class CreateInnovationSessionRequest(BaseModel):
     """Request model for creating a new innovation session"""
-    title: str = Field(..., description="Session title")
-    description: str = Field(..., description="Session description")
+    title: str = Field(..., description="Session title", min_length=10, max_length=200)
+    description: Optional[str] = Field(None, description="Session description", max_length=1000)
+    user_id: Optional[str] = Field(None, description="User ID for session ownership")
     metadata: Optional[Dict[str, Any]] = Field(default={}, description="Additional session metadata")
 
 class PhaseTransitionDecision(BaseModel):
