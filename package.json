@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "HOST=0.0.0.0 PORT=10000 react-scripts start",
+    "start": "serve -s build -l 10000",
     "start:ngrok": "cp .env.ngrok .env && HOST=0.0.0.0 PORT=10000 react-scripts start",
     "start:local": "cp .env .env.local && HOST=localhost PORT=10000 react-scripts start",
     "build": "react-scripts build",
@@ -27,7 +27,8 @@
     "react-markdown": "^10.1.0",
     "react-query": "^3.39.0",
     "react-router-dom": "^6.20.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "serve": "^14.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
