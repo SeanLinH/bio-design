@@ -6,20 +6,72 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/ap
 // Create axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
     'accept': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   },
+  // Ensure credentials are sent for CORS
+  withCredentials: false, // Set to false for cross-origin requests to localhost
 });
 
-// Add request interceptor for ngrok compatibility
+// Add request interceptor for ngrok compatibility and debugging
 apiClient.interceptors.request.use((config) => {
+  console.log('🚀 API Request:', {
+    method: config.method?.toUpperCase(),
+    url: config.url,
+    baseURL: config.baseURL,
+    fullURL: `${config.baseURL}${config.url}`,
+    headers: config.headers,
+    data: config.data
+  });
+
   // Add ngrok headers if using ngrok environment
   if (BASE_URL.includes('ngrok')) {
     config.headers['ngrok-skip-browser-warning'] = 'true';
   }
+
+  // Always add ngrok header for cross-origin requests
+  config.headers['ngrok-skip-browser-warning'] = 'true';
+
   return config;
+}, (error) => {
+  console.error('❌ Request Error:', error);
+  return Promise.reject(error);
+});
+
+// Add response interceptor for debugging
+apiClient.interceptors.response.use((response) => {
+  console.log('✅ API Response:', {
+    status: response.status,
+    statusText: response.statusText,
+    url: response.config.url,
+    data: response.data,
+    headers: response.headers
+  });
+  return response;
+}, (error) => {
+  console.error('❌ Response Error:', {
+    message: error.message,
+    status: error.response?.status,
+    statusText: error.response?.statusText,
+    url: error.config?.url,
+    responseData: error.response?.data,
+    requestHeaders: error.config?.headers
+  });
+
+  // Log more details for CORS errors
+  if (error.response?.status === 0 || error.code === 'ERR_NETWORK') {
+    console.error('🌐 Network/CORS Error Details:', {
+      message: 'This might be a CORS or network connectivity issue',
+      baseURL: error.config?.baseURL,
+      fullURL: `${error.config?.baseURL}${error.config?.url}`,
+      method: error.config?.method
+    });
+  }
+
+  return Promise.reject(error);
 });
 
 // Fixed configuration for your backend
@@ -56,11 +108,20 @@ class ApiService {
   // 獲取所有 agents
   async getAgents(): Promise<DebateAgent[]> {
     try {
+      console.log('📋 Fetching agents from:', `/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}`);
       const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}`);
+      console.log('📋 Agents response:', response.data);
       const agents = response.data.apps?.agents || [];
+      console.log('📋 Processed agents:', agents);
       return agents;
     } catch (error) {
-      console.error('Error fetching agents:', error);
+      console.error('❌ Error fetching agents:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
       throw error;
     }
   }
@@ -68,10 +129,19 @@ class ApiService {
   // 獲取單個 agent 的詳細信息
   async getAgentDetails(agentId: number): Promise<DebateAgent> {
     try {
+      console.log('🔍 Fetching agent details for ID:', agentId);
       const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/agents/${agentId}`);
+      console.log('🔍 Agent details response:', response.data);
       return response.data.agents;
     } catch (error) {
-      console.error('Error fetching agent details:', error);
+      console.error('❌ Error fetching agent details:', error);
+      console.error('❌ Error details:', {
+        agentId,
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
       throw error;
     }
   }
