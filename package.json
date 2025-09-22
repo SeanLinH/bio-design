@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "serve -s build -l 10000 -H 0.0.0.0",
+    "start": "serve -s build -l tcp://0.0.0.0:10000",
     "start:ngrok": "cp .env.ngrok .env && react-scripts start",
     "start:local": "cp .env .env.local && react-scripts start",
     "build": "react-scripts build",
