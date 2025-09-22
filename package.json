@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "start:ngrok": "cp .env.ngrok .env && HOST=0.0.0.0 PORT=3002 react-scripts start",
-    "start:local": "cp .env .env.local && HOST=localhost PORT=3002 react-scripts start",
+    "start": "HOST=0.0.0.0 PORT=10000 react-scripts start",
+    "start:ngrok": "cp .env.ngrok .env && HOST=0.0.0.0 PORT=10000 react-scripts start",
+    "start:local": "cp .env .env.local && HOST=localhost PORT=10000 react-scripts start",
     "build": "react-scripts build",
     "build:ngrok": "cp .env.ngrok .env && react-scripts build",
     "test": "react-scripts test",
