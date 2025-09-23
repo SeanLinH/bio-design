@@ -87,11 +87,11 @@ const PREDEFINED_AGENTS = {
   risk_management: 134,
   regulatory_authority: 135,
   reporter: 137,
-  debate_process: 138, // The loop agent that needs to be updated
 };
 
 // Fixed agents that cannot be removed or edited by users (no UI display)
 const FIXED_AGENTS = {
+    debate_process: 138, // The loop agent that needs to be updated
     unmet_need_source: 136,
     convergencer: 139,
     problem_solver: 140,
@@ -108,10 +108,10 @@ class ApiService {
   // 獲取所有 agents
   async getAgents(): Promise<DebateAgent[]> {
     try {
-      console.log('📋 Fetching agents from:', `/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}`);
-      const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}`);
+      console.log('📋 Fetching agents from:', `/spaces/${FIXED_SPACE_ID}/agents?template=false`);
+      const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/agents?template=false`);
       console.log('📋 Agents response:', response.data);
-      const agents = response.data.apps?.agents || [];
+      const agents = response.data.agents || [];
       console.log('📋 Processed agents:', agents);
       return agents;
     } catch (error) {
@@ -232,7 +232,7 @@ class ApiService {
   // Get current debate process configuration
   async getDebateProcessConfig(): Promise<any> {
     try {
-      const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/agents/${PREDEFINED_AGENTS.debate_process}`);
+      const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/agents/${FIXED_AGENTS.debate_process}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching debate process config:', error);
@@ -243,12 +243,93 @@ class ApiService {
   // Update debate process with new agent list
   async updateDebateProcess(agentIds: number[]) {
     try {
-      const response = await apiClient.put(`/spaces/${FIXED_SPACE_ID}/agents/${PREDEFINED_AGENTS.debate_process}`, {
+      const response = await apiClient.put(`/spaces/${FIXED_SPACE_ID}/agents/${FIXED_AGENTS.debate_process}`, {
         sub_agent: agentIds,
       });
       return response.data;
     } catch (error) {
       console.error('Error updating debate process:', error);
+      throw error;
+    }
+  }
+
+  // Add agent to debate process
+  async addAgentToDebateProcess(agentId: number) {
+    try {
+      console.log('➕ [DEBUG] Adding agent to debate process:', agentId);
+
+      // Get current debate process config
+      const debateProcessResponse = await this.getDebateProcessConfig();
+      const currentAgentIds = debateProcessResponse?.agents?.sub_agent || [];
+
+      console.log('➕ [DEBUG] Current agent IDs in debate process:', currentAgentIds);
+
+      // Check if agent is already in the process
+      if (currentAgentIds.includes(agentId)) {
+        console.log(`➕ [INFO] Agent ${agentId} is already in debate process`);
+        return debateProcessResponse;
+      }
+
+      // Add new agent to the list
+      const updatedAgentIds = [...currentAgentIds, agentId];
+      console.log('➕ [DEBUG] Updated agent IDs after addition:', updatedAgentIds);
+
+      // Update debate process
+      const result = await this.updateDebateProcess(updatedAgentIds);
+      console.log('➕ [SUCCESS] Agent added to debate process:', agentId);
+
+      return result;
+    } catch (error: any) {
+      console.error('❌ [ERROR] Error adding agent to debate process:', {
+        agentId,
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        stack: error?.stack
+      });
+      throw error;
+    }
+  }
+
+  // Remove agent from debate process
+  async removeAgentFromDebateProcess(agentId: number) {
+    try {
+      console.log('🗑️ [DEBUG] Removing agent from debate process:', agentId);
+
+      // Get current debate process config
+      const debateProcessResponse = await this.getDebateProcessConfig();
+      const currentAgentIds = debateProcessResponse?.agents?.sub_agent || [];
+
+      console.log('🗑️ [DEBUG] Current agent IDs in debate process:', currentAgentIds);
+
+      // Check if agent is actually in the process
+      if (!currentAgentIds.includes(agentId)) {
+        console.warn('🗑️ [WARN] Agent not found in debate process:', agentId);
+        throw new Error(`Agent ${agentId} is not currently in the debate process`);
+      }
+
+      // Remove agent from the list
+      const updatedAgentIds = currentAgentIds.filter((id: number) => id !== agentId);
+      console.log('🗑️ [DEBUG] Updated agent IDs after removal:', updatedAgentIds);
+
+      // Validate that we're not removing all agents (keep at least 1)
+      if (updatedAgentIds.length === 0) {
+        throw new Error('Cannot remove all agents from debate process. At least one agent must remain.');
+      }
+
+      // Update debate process
+      const result = await this.updateDebateProcess(updatedAgentIds);
+      console.log('🗑️ [SUCCESS] Agent removed from debate process:', agentId);
+
+      return result;
+    } catch (error: any) {
+      console.error('❌ [ERROR] Error removing agent from debate process:', {
+        agentId,
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        stack: error?.stack
+      });
       throw error;
     }
   }
@@ -407,15 +488,15 @@ class ApiService {
       const response = await apiClient.delete(`/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/users/${userId}/sessions/${sessionId}`);
       console.log('✅ Session interrupted successfully:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error interrupting session:', error);
       console.error('❌ Error details:', {
         userId,
         sessionId,
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        config: error.config
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        config: error?.config
       });
       throw error;
     }

@@ -262,7 +262,7 @@ export default function AgentManagement() {
       <Grid container spacing={3}>
         {agents.filter((agent: DebateAgent) => {
           // Hide fixed agents that should not be displayed in UI
-          const fixedAgentIds = [136, 139, 140, 141]; // unmet_need_source, convergencer, problem_solver, entire_process
+          const fixedAgentIds = [136, 138, 139, 140, 141]; // unmet_need_source, debate_process, convergencer, problem_solver, entire_process
           return !fixedAgentIds.includes(agent.id!);
         }).map((agent: DebateAgent) => {
           const agentType = getAgentType(agent);
@@ -338,7 +338,7 @@ export default function AgentManagement() {
 
       {/* Debate Process Management */}
       <Box sx={{ mt: 4 }}>
-        <DebateProcessStatus showActions={true} />
+        <DebateProcessStatus showActions={true} enhanced={true} />
       </Box>
 
       {/* Template Menu */}
