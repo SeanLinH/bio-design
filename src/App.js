@@ -11,6 +11,7 @@ import AgentManagement from './pages/AgentManagement/AgentManagement.tsx';
 import DebateSetup from './pages/DebateSetup/DebateSetup.tsx';
 import DebateMonitor from './pages/DebateMonitor/DebateMonitor.tsx';
 import SessionHistory from './pages/SessionHistory/SessionHistory.tsx';
+import SessionDetail from './components/session/SessionDetail.tsx';
 import MarkdownTest from './pages/MarkdownTest/MarkdownTest.tsx';
 
 // Components
@@ -55,6 +56,7 @@ export default function App() {
                 <Route path="/setup" element={<DebateSetup />} />
                 <Route path="/monitor" element={<DebateMonitor />} />
                 <Route path="/sessions" element={<SessionHistory />} />
+                <Route path="/sessions/:sessionId" element={<SessionDetail />} />
                 <Route path="/markdown-test" element={<MarkdownTest />} />
               </Routes>
             </Layout>

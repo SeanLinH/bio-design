@@ -399,15 +399,193 @@ class ApiService {
     }
   }
 
-  // Get session details
-  async getSessionDetails(sessionId: string): Promise<any> {
+  // Get session details using correct API endpoint (CLAUDE.md #9)
+  async getSessionDetails(userId: string, sessionId: string): Promise<any> {
+    console.log('🔍 [DEBUG] getSessionDetails called with:', { userId, sessionId });
+
     try {
-      const response = await apiClient.get(`/spaces/${FIXED_SPACE_ID}/sessions/${sessionId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching session details:', error);
+      // Use correct API endpoint from CLAUDE.md: GET /spaces/13/apps/12/users/{userId}/sessions/{sessionId}
+      const apiUrl = `/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/users/${userId}/sessions/${sessionId}`;
+      console.log('🔍 [DEBUG] API URL:', apiUrl);
+
+      const response = await apiClient.get(apiUrl);
+
+      console.log('🔍 [DEBUG] Raw API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data
+      });
+
+      // Process the response to match our component expectations
+      const sessionData = response.data;
+      console.log('🔍 [DEBUG] Session data structure:', {
+        keys: Object.keys(sessionData || {}),
+        hasMessages: !!(sessionData?.messages),
+        hasConversation: !!(sessionData?.conversation),
+        hasHistory: !!(sessionData?.history),
+        hasChat: !!(sessionData?.chat),
+        sessionData: sessionData
+      });
+
+      // Check for different possible message field names
+      const possibleMessageFields = ['messages', 'conversation', 'history', 'chat', 'content', 'dialogue'];
+      let messagesArray = [];
+      let foundMessageField = null;
+
+      for (const field of possibleMessageFields) {
+        if (sessionData && sessionData[field]) {
+          messagesArray = sessionData[field];
+          foundMessageField = field;
+          console.log(`🔍 [DEBUG] Found messages in field: ${field}`, messagesArray);
+          break;
+        }
+      }
+
+      if (!foundMessageField) {
+        console.log('🔍 [DEBUG] No message field found, available fields:', Object.keys(sessionData || {}));
+      }
+
+      // Transform the data to match SessionDetailData interface
+      const transformedData = {
+        id: sessionId,
+        userId: userId,
+        createdAt: sessionData?.created_at || sessionData?.createdAt || sessionData?.timestamp || new Date().toISOString(),
+        question: sessionData?.initial_message || sessionData?.question || sessionData?.prompt || sessionData?.input,
+        status: sessionData?.status || 'completed',
+        participantCount: sessionData?.participant_count || sessionData?.participantCount || 0,
+        messages: this.processSessionMessages(messagesArray)
+      };
+
+      console.log('🔍 [DEBUG] Transformed data:', transformedData);
+      return transformedData;
+
+    } catch (error: any) {
+      console.error('❌ [ERROR] Error fetching session details:', error);
+      console.error('❌ [ERROR] Error details:', {
+        message: error?.message,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        responseData: error?.response?.data,
+        requestConfig: error?.config
+      });
+
+      // If API fails, try to get from localStorage as fallback
+      try {
+        const savedSessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+        const foundSession = savedSessions.find((s: any) => s.id === sessionId);
+
+        if (foundSession) {
+          console.log('🔍 [DEBUG] Using localStorage fallback for session:', foundSession);
+
+          return {
+            ...foundSession,
+            messages: [
+              {
+                id: '1',
+                role: 'user',
+                content: foundSession.question || '會話內容暫無記錄',
+                timestamp: foundSession.createdAt,
+              },
+              {
+                id: '2',
+                role: 'assistant',
+                content: `此會話的詳細對話記錄暫時無法從伺服器獲取，顯示的是儲存在本地的基本資訊。\n\n**調試資訊:**\n- API 端點: /spaces/13/apps/12/users/${userId}/sessions/${sessionId}\n- 錯誤: 無法連接到後端伺服器\n- 建議: 檢查網路連接和伺服器狀態`,
+                agentId: 'agent_137',
+                timestamp: foundSession.createdAt,
+              },
+              {
+                id: '3',
+                role: 'assistant',
+                content: '為了測試介面，這裡是一個模擬的專家回應範例:\n\n## 供應鏈風險分析\n\n根據當前市場狀況，我們識別出以下關鍵風險點:\n\n1. **供應商集中度風險**: 高度依賴單一供應商\n2. **運輸延遲風險**: 國際物流瓶頸\n3. **庫存管理風險**: 安全庫存水位偏低\n\n### 建議措施\n- 建立多元化供應商網絡\n- 增加戰略性庫存\n- 實施風險監控系統',
+                agentId: 'agent_131',
+                timestamp: new Date(Date.now() + 5000).toISOString(),
+              }
+            ]
+          };
+        }
+
+        // If no session found in localStorage, create a mock session
+        console.log('🔍 [DEBUG] Creating mock session for testing');
+        return {
+          id: sessionId,
+          userId: userId,
+          createdAt: new Date().toISOString(),
+          question: '這是一個測試會話，用於調試會話詳情功能',
+          status: 'completed',
+          participantCount: 5,
+          messages: [
+            {
+              id: 'mock_1',
+              role: 'user',
+              content: '這是一個測試會話，用於調試會話詳情功能。請分析醫療供應鏈的短缺風險。',
+              timestamp: new Date().toISOString(),
+            },
+            {
+              id: 'mock_2',
+              role: 'assistant',
+              content: `**調試模式 - 模擬專家回應**\n\n由於無法連接到實際的API端點，這裡顯示的是模擬數據。\n\n實際API調用失敗的原因可能包括:\n- 網路連接問題\n- 伺服器尚未啟動\n- API端點不正確: /spaces/13/apps/12/users/${userId}/sessions/${sessionId}\n- 認證問題`,
+              agentId: 'agent_137',
+              timestamp: new Date(Date.now() + 1000).toISOString(),
+            }
+          ]
+        };
+      } catch (localError) {
+        console.error('❌ [ERROR] Error accessing localStorage:', localError);
+      }
+
       throw error;
     }
+  }
+
+  // Helper method to process session messages
+  private processSessionMessages(messages: any[]): any[] {
+    console.log('🔍 [DEBUG] processSessionMessages input:', {
+      messagesType: typeof messages,
+      isArray: Array.isArray(messages),
+      length: messages?.length,
+      messages: messages
+    });
+
+    if (!Array.isArray(messages)) {
+      console.log('🔍 [DEBUG] Messages is not an array, returning empty array');
+      return [];
+    }
+
+    if (messages.length === 0) {
+      console.log('🔍 [DEBUG] Messages array is empty');
+      return [];
+    }
+
+    const processedMessages = messages.map((msg, index) => {
+      console.log(`🔍 [DEBUG] Processing message ${index}:`, {
+        messageKeys: Object.keys(msg || {}),
+        msg: msg
+      });
+
+      // Try different possible field names for content
+      const content = msg.content || msg.text || msg.message || msg.body || msg.response || '';
+
+      // Try different possible field names for agent ID
+      const agentId = msg.agent_id || msg.agentId || msg.agent || msg.sender_id || msg.senderId;
+
+      // Try different possible field names for timestamp
+      const timestamp = msg.timestamp || msg.created_at || msg.createdAt || msg.time || new Date().toISOString();
+
+      const processedMsg = {
+        id: msg.id || msg._id || `msg_${index}`,
+        role: msg.role || msg.type || (agentId ? 'assistant' : 'user'),
+        content: content,
+        agentId: agentId,
+        timestamp: timestamp,
+        agentName: msg.agent_name || msg.agentName || msg.sender_name || msg.senderName
+      };
+
+      console.log(`🔍 [DEBUG] Processed message ${index}:`, processedMsg);
+      return processedMsg;
+    });
+
+    console.log('🔍 [DEBUG] Final processed messages:', processedMessages);
+    return processedMessages;
   }
 
   // Save session to history (local storage for now)
@@ -448,45 +626,126 @@ class ApiService {
     }
   }
 
-  // Update session history API to use localStorage data
-  async getSessionHistory(page: number = 1, pageSize: number = 10): Promise<any[]> {
+  // Get session history from real API endpoint (CLAUDE.md #9)
+  async getSessionHistory(page: number = 1, pageSize: number = 10, userId: string = 'user1'): Promise<any[]> {
+    console.log('🔍 [DEBUG] getSessionHistory called with:', { page, pageSize, userId });
+
     try {
-      // 從localStorage獲取數據
-      const allSessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+      // Use correct API endpoint from CLAUDE.md: GET /spaces/13/apps/12/users/user1/sessions
+      const apiUrl = `/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/users/${userId}/sessions`;
+      console.log('🔍 [DEBUG] Fetching sessions from API URL:', apiUrl);
 
-      // 分頁邏輯
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedSessions = allSessions.slice(startIndex, endIndex);
+      const response = await apiClient.get(apiUrl);
 
-      // 如果localStorage為空，返回模擬數據
-      if (allSessions.length === 0) {
-        const mockSessions = [
-          {
-            id: 'session_001',
-            userId: 'user1',
-            createdAt: new Date().toISOString(),
-            question: '分析醫療供應鏈風險',
-            status: 'completed',
-            participantCount: 5,
-          },
-          {
-            id: 'session_002',
-            userId: 'user2',
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-            question: '預測藥品短缺風險',
-            status: 'active',
-            participantCount: 5,
-          },
-        ];
-        return mockSessions;
+      console.log('🔍 [DEBUG] Raw session history response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data
+      });
+
+      // Handle different possible response structures
+      let sessions = response.data;
+      if (response.data && response.data.sessions) {
+        sessions = response.data.sessions;
+      } else if (response.data && Array.isArray(response.data)) {
+        sessions = response.data;
+      } else if (response.data && response.data.data) {
+        sessions = response.data.data;
       }
 
-      return paginatedSessions;
-    } catch (error) {
-      console.error('Error fetching session history:', error);
-      throw error;
+      console.log('🔍 [DEBUG] Processed sessions:', {
+        sessionsType: typeof sessions,
+        isArray: Array.isArray(sessions),
+        length: sessions?.length,
+        firstSession: sessions?.[0]
+      });
+
+      if (!Array.isArray(sessions)) {
+        console.log('🔍 [DEBUG] Sessions is not an array, falling back to mock data');
+        return this.getMockSessionHistory();
+      }
+
+      // Sort sessions by creation date DESC (newest first)
+      const sortedSessions = sessions.sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || a.createdAt || a.timestamp || 0);
+        const dateB = new Date(b.created_at || b.createdAt || b.timestamp || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      // Apply pagination (10 sessions per page as specified)
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedSessions = sortedSessions.slice(startIndex, endIndex);
+
+      // Transform sessions to match our interface
+      const transformedSessions = paginatedSessions.map((session: any) => ({
+        id: session.id || session.session_id || session._id,
+        userId: session.user_id || session.userId || userId,
+        createdAt: session.created_at || session.createdAt || session.timestamp || new Date().toISOString(),
+        question: session.initial_message || session.question || session.prompt || session.input || '未知問題',
+        status: session.status || 'completed',
+        participantCount: session.participant_count || session.participantCount || 0,
+      }));
+
+      console.log('🔍 [DEBUG] Final transformed sessions:', transformedSessions);
+      return transformedSessions;
+
+    } catch (error: any) {
+      console.error('❌ [ERROR] Error fetching session history from API:', error);
+      console.error('❌ [ERROR] API Error details:', {
+        message: error?.message,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        responseData: error?.response?.data
+      });
+
+      // Fallback to localStorage first
+      try {
+        console.log('🔍 [DEBUG] Trying localStorage fallback');
+        const savedSessions = JSON.parse(localStorage.getItem('sessionHistory') || '[]');
+        if (savedSessions.length > 0) {
+          const startIndex = (page - 1) * pageSize;
+          const endIndex = startIndex + pageSize;
+          return savedSessions.slice(startIndex, endIndex);
+        }
+      } catch (localError) {
+        console.error('❌ [ERROR] localStorage fallback failed:', localError);
+      }
+
+      // Final fallback to mock data
+      console.log('🔍 [DEBUG] Using mock data as final fallback');
+      return this.getMockSessionHistory();
     }
+  }
+
+  // Helper method for mock session history
+  private getMockSessionHistory(): any[] {
+    return [
+      {
+        id: 'mock_session_001',
+        userId: 'user1',
+        createdAt: new Date().toISOString(),
+        question: '分析醫療供應鏈風險 (測試數據)',
+        status: 'completed',
+        participantCount: 5,
+      },
+      {
+        id: 'mock_session_002',
+        userId: 'user1',
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        question: '預測藥品短缺風險 (測試數據)',
+        status: 'active',
+        participantCount: 5,
+      },
+      {
+        id: 'mock_session_003',
+        userId: 'user1',
+        createdAt: new Date(Date.now() - 172800000).toISOString(),
+        question: '庫存管理優化建議 (測試數據)',
+        status: 'completed',
+        participantCount: 5,
+      }
+    ];
   }
 
   // Get the 5 core expert agents dynamically by name

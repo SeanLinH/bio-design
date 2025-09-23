@@ -31,6 +31,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 import ApiService from '../../services/ApiService.ts';
 
 interface SessionRecord {
@@ -44,21 +45,24 @@ interface SessionRecord {
 
 export default function SessionHistory() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedSession, setSelectedSession] = useState<SessionRecord | null>(null);
   const [newSessionUserId, setNewSessionUserId] = useState('user1');
 
-  // 模擬獲取session歷史記錄（這裡需要根據實際API調整）
+  // 獲取session歷史記錄 - 使用實際API端點 (CLAUDE.md #9)
   const { data: sessions = [], isLoading, error, refetch } = useQuery(
-    ['sessionHistory', page],
-    () => ApiService.getSessionHistory(page, pageSize),
+    ['sessionHistory', page, pageSize],
+    () => ApiService.getSessionHistory(page, pageSize, 'user1'),
     {
-      // 如果API不存在，暫時返回空數組
       retry: false,
       onError: (error) => {
-        console.log('Session history API not available yet:', error);
+        console.log('🔍 [SessionHistory] API error:', error);
+      },
+      onSuccess: (data) => {
+        console.log('🔍 [SessionHistory] Sessions loaded:', data);
       }
     }
   );
@@ -110,8 +114,9 @@ export default function SessionHistory() {
 
   const handleViewSession = (session: SessionRecord) => {
     setSelectedSession(session);
-    // 這裡可以導航到會話詳情頁面或顯示詳情對話框
-    alert(`查看會話: ${session.id}`);
+    // 導航到會話詳情頁面，使用實際的 session ID
+    console.log('🔍 [SessionHistory] Navigating to session detail:', session.id);
+    navigate(`/sessions/${session.id}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -168,8 +173,10 @@ export default function SessionHistory() {
       </Box>
 
       {error && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          會話歷史記錄功能準備中，目前顯示模擬數據
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          無法連接到會話歷史API，正在顯示備用數據。請檢查網路連接或伺服器狀態。
+          <br />
+          <small>API端點: /spaces/13/apps/12/users/user1/sessions</small>
         </Alert>
       )}
 
