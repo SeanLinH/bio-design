@@ -271,15 +271,15 @@ class ApiService {
   }
 
   // Execution - Use fetch for SSE
-  async runSSE(question: string, userId: string = 'user1') {
-    // 首先創建新的 session
-    const sessionId = await this.createSession(userId);
-    console.log(`Created session: ${sessionId}`);
+  async runSSE(question: string, userId: string = 'user1', sessionId?: string) {
+    // 如果沒有提供 sessionId，則創建新的 session
+    const finalSessionId = sessionId || await this.createSession(userId);
+    console.log(`Using session: ${finalSessionId}`);
 
     const requestUrl = `${BASE_URL}/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/run_sse`;
     const requestBody = {
       user_id: userId,
-      session_id: sessionId,
+      session_id: finalSessionId,
       new_message: {
         parts: [
           {

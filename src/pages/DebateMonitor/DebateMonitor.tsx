@@ -107,7 +107,7 @@ export default function DebateMonitor() {
     setError(null);
 
     try {
-      const response = await ApiService.runSSE(sessionData.question, sessionData.userId);
+      const response = await ApiService.runSSE(sessionData.question, sessionData.userId, sessionData.sessionId);
 
       if (!response.body) {
         throw new Error('No response body');
