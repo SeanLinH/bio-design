@@ -399,6 +399,28 @@ class ApiService {
     }
   }
 
+  // Interrupt running session (stop debate)
+  async interruptSession(userId: string, sessionId: string): Promise<any> {
+    try {
+      console.log('🛑 Interrupting session:', { userId, sessionId });
+      // Use correct API endpoint from CLAUDE.md: DELETE /spaces/13/apps/12/users/{userId}/sessions/{sessionId}
+      const response = await apiClient.delete(`/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/users/${userId}/sessions/${sessionId}`);
+      console.log('✅ Session interrupted successfully:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error interrupting session:', error);
+      console.error('❌ Error details:', {
+        userId,
+        sessionId,
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
+      throw error;
+    }
+  }
+
   // Get session details using correct API endpoint (CLAUDE.md #9)
   async getSessionDetails(userId: string, sessionId: string): Promise<any> {
     console.log('🔍 [DEBUG] getSessionDetails called with:', { userId, sessionId });

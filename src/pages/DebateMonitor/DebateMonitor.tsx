@@ -13,6 +13,7 @@ import {
   Avatar,
   Divider,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 
 // Add CSS for blinking animation
@@ -65,9 +66,11 @@ export default function DebateMonitor() {
   const location = useLocation();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
 
   const [messages, setMessages] = useState<DebateMessage[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const [currentAgent, setCurrentAgent] = useState('');
   const [progress, setProgress] = useState(0);
   const [iteration, setIteration] = useState(1);
@@ -114,6 +117,7 @@ export default function DebateMonitor() {
       }
 
       const reader = response.body.getReader();
+      readerRef.current = reader; // Store reader reference for cancellation
       const decoder = new TextDecoder();
 
       let buffer = '';
@@ -126,7 +130,9 @@ export default function DebateMonitor() {
 
         if (done) {
           setIsRunning(false);
+          setIsStopping(false);
           setCurrentAgent('');
+          readerRef.current = null;
           break;
         }
 
@@ -224,14 +230,117 @@ export default function DebateMonitor() {
       }
     } catch (error) {
       console.error('Error during debate:', error);
-      setError(`辯論過程中發生錯誤: ${error.message}`);
+      if (error.name !== 'AbortError') {
+        setError(`辯論過程中發生錯誤: ${error.message}`);
+      }
       setIsRunning(false);
+      setIsStopping(false);
+      readerRef.current = null;
     }
   };
 
-  const handleStop = () => {
-    setIsRunning(false);
-    setCurrentAgent('');
+  const handleStop = async () => {
+    if (!sessionData || isStopping) {
+      console.log('🛑 Stop operation blocked:', {
+        hasSessionData: !!sessionData,
+        isStopping,
+        sessionId: sessionData?.sessionId
+      });
+      return;
+    }
+
+    console.log('🛑 Starting stop operation:', {
+      userId: sessionData.userId,
+      sessionId: sessionData.sessionId,
+      isRunning,
+      hasReader: !!readerRef.current
+    });
+
+    setIsStopping(true);
+    setError(null);
+
+    try {
+      // Step 1: Cancel the stream reader first
+      console.log('🛑 Step 1: Canceling stream reader...');
+      if (readerRef.current) {
+        try {
+          await readerRef.current.cancel();
+          console.log('✅ Stream reader canceled successfully');
+        } catch (readerError) {
+          console.warn('⚠️ Error canceling stream reader:', readerError);
+        }
+        readerRef.current = null;
+      } else {
+        console.log('ℹ️ No active stream reader to cancel');
+      }
+
+      // Step 2: Call the interrupt API to stop the backend session
+      console.log('🛑 Step 2: Calling interrupt API...');
+      try {
+        const result = await ApiService.interruptSession(sessionData.userId, sessionData.sessionId);
+        console.log('✅ Backend session interrupted successfully:', result);
+      } catch (apiError) {
+        console.error('❌ API interrupt failed:', {
+          message: apiError.message,
+          status: apiError.response?.status,
+          statusText: apiError.response?.statusText,
+          data: apiError.response?.data
+        });
+
+        // Set specific error message based on error type
+        if (apiError.response?.status === 404) {
+          setError('會話已經結束或不存在');
+        } else if (apiError.response?.status >= 500) {
+          setError('伺服器錯誤，但前端已停止辯論');
+        } else {
+          setError(`停止後端會話時發生錯誤: ${apiError.message}`);
+        }
+
+        // Continue with frontend cleanup even if API fails
+        console.log('⚠️ Continuing with frontend cleanup despite API failure');
+      }
+
+      // Step 3: Update UI state
+      console.log('🛑 Step 3: Updating UI state...');
+      setIsRunning(false);
+      setCurrentAgent('');
+      setPartialMessages(new Map()); // Clear partial messages
+
+      // Step 4: Add system message to indicate stop
+      const stopMessage: DebateMessage = {
+        id: `system_stop_${Date.now()}`,
+        agent_name: 'System',
+        content: '🛑 辯論已被用戶中止',
+        timestamp: new Date().toISOString(),
+        type: 'system',
+        partial: false,
+      };
+      setMessages(prev => [...prev, stopMessage]);
+
+      console.log('✅ Stop operation completed successfully');
+
+    } catch (error) {
+      console.error('❌ Unexpected error during stop operation:', error);
+      setError(`停止辯論時發生未預期的錯誤: ${error.message}`);
+
+      // Emergency cleanup: ensure frontend stops regardless of any errors
+      console.log('🆘 Emergency cleanup: forcing frontend stop...');
+      setIsRunning(false);
+      setCurrentAgent('');
+      setPartialMessages(new Map());
+
+      if (readerRef.current) {
+        try {
+          await readerRef.current.cancel();
+        } catch (cancelError) {
+          console.error('❌ Emergency reader cancel failed:', cancelError);
+        }
+        readerRef.current = null;
+      }
+    } finally {
+      setIsStopping(false);
+      console.log('🛑 Stop operation finished, isStopping set to false');
+    }
   };
 
   const handleExport = () => {
@@ -281,11 +390,15 @@ export default function DebateMonitor() {
           {isRunning ? (
             <Button
               variant="outlined"
-              startIcon={<StopIcon />}
+              startIcon={isStopping ? <CircularProgress size={16} /> : <StopIcon />}
               onClick={handleStop}
               color="error"
+              disabled={isStopping}
+              sx={{
+                minWidth: '120px'
+              }}
             >
-              停止
+              {isStopping ? '正在停止...' : '停止辯論'}
             </Button>
           ) : (
             <Button
@@ -313,8 +426,21 @@ export default function DebateMonitor() {
                   當前狀態
                 </Typography>
                 <Chip
-                  label={isRunning ? '進行中' : '已停止'}
-                  color={isRunning ? 'success' : 'default'}
+                  label={
+                    isStopping
+                      ? '正在停止...'
+                      : isRunning
+                      ? '進行中'
+                      : '已停止'
+                  }
+                  color={
+                    isStopping
+                      ? 'warning'
+                      : isRunning
+                      ? 'success'
+                      : 'default'
+                  }
+                  icon={isStopping ? <CircularProgress size={16} /> : undefined}
                 />
               </Box>
 
