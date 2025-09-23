@@ -278,6 +278,10 @@ class ApiService {
       const result = await this.updateDebateProcess(updatedAgentIds);
       console.log('➕ [SUCCESS] Agent added to debate process:', agentId);
 
+      // Attach agent to activate configuration changes (required step)
+      await this.attachAgent(141);
+      console.log('➕ [SUCCESS] Configuration activated via attach_agent');
+
       return result;
     } catch (error: any) {
       console.error('❌ [ERROR] Error adding agent to debate process:', {
@@ -321,9 +325,42 @@ class ApiService {
       const result = await this.updateDebateProcess(updatedAgentIds);
       console.log('🗑️ [SUCCESS] Agent removed from debate process:', agentId);
 
+      // Attach agent to activate configuration changes (required step)
+      await this.attachAgent(141);
+      console.log('🗑️ [SUCCESS] Configuration activated via attach_agent');
+
       return result;
     } catch (error: any) {
       console.error('❌ [ERROR] Error removing agent from debate process:', {
+        agentId,
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        stack: error?.stack
+      });
+      throw error;
+    }
+  }
+
+  // Attach agent to activate configuration changes (required after add/remove operations)
+  async attachAgent(agentId: number = 141) {
+    try {
+      console.log('🔗 [DEBUG] Attaching agent to activate configuration:', agentId);
+
+      const response = await apiClient.post(`/spaces/${FIXED_SPACE_ID}/apps/12/attach_agent`, {
+        agent_id: agentId
+      });
+
+      console.log('🔗 [SUCCESS] Agent attached successfully:', agentId, response.data);
+      return response.data;
+    } catch (error: any) {
+      // Handle UniqueViolation gracefully - agent is already attached
+      if (error?.response?.data?.detail?.includes('duplicate key value violates unique constraint')) {
+        console.log('🔗 [INFO] Agent already attached, continuing:', agentId);
+        return { status: 'already_attached' };
+      }
+
+      console.error('❌ [ERROR] Error attaching agent:', {
         agentId,
         message: error?.message,
         status: error?.response?.status,
