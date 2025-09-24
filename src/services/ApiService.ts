@@ -506,13 +506,21 @@ class ApiService {
 
 
   // Delete session
-  async deleteSession(sessionId: string): Promise<any> {
+  async deleteSession(sessionId: string, userId: string = 'user1'): Promise<any> {
     try {
-      // 實際API調用
-      const response = await apiClient.delete(`/spaces/${FIXED_SPACE_ID}/sessions/${sessionId}`);
+      console.log('🗑️ [DEBUG] Deleting session:', { sessionId, userId });
+      // Use correct API endpoint from CLAUDE.md: DELETE /spaces/13/apps/12/users/{userId}/sessions/{sessionId}
+      const response = await apiClient.delete(`/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/users/${userId}/sessions/${sessionId}`);
+      console.log('✅ Session deleted successfully:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('Error deleting session:', error);
+    } catch (error: any) {
+      console.error('❌ Error deleting session:', {
+        sessionId,
+        userId,
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data
+      });
       throw error;
     }
   }
@@ -567,17 +575,25 @@ class ApiService {
         sessionData: sessionData
       });
 
-      // Check for different possible message field names
-      const possibleMessageFields = ['messages', 'conversation', 'history', 'chat', 'content', 'dialogue'];
+      // Check for events field first (correct API structure)
       let messagesArray = [];
       let foundMessageField = null;
 
-      for (const field of possibleMessageFields) {
-        if (sessionData && sessionData[field]) {
-          messagesArray = sessionData[field];
-          foundMessageField = field;
-          console.log(`🔍 [DEBUG] Found messages in field: ${field}`, messagesArray);
-          break;
+      if (sessionData && sessionData.events && Array.isArray(sessionData.events)) {
+        messagesArray = sessionData.events;
+        foundMessageField = 'events';
+        console.log(`🔍 [DEBUG] Found messages in events field:`, messagesArray);
+      } else {
+        // Fallback to other possible message field names
+        const possibleMessageFields = ['messages', 'conversation', 'history', 'chat', 'content', 'dialogue'];
+
+        for (const field of possibleMessageFields) {
+          if (sessionData && sessionData[field]) {
+            messagesArray = sessionData[field];
+            foundMessageField = field;
+            console.log(`🔍 [DEBUG] Found messages in field: ${field}`, messagesArray);
+            break;
+          }
         }
       }
 
@@ -702,18 +718,35 @@ class ApiService {
         msg: msg
       });
 
-      // Try different possible field names for content
-      const content = msg.content || msg.text || msg.message || msg.body || msg.response || '';
+      let content = '';
+      let role = 'user';
+      let agentId = '';
 
-      // Try different possible field names for agent ID
-      const agentId = msg.agent_id || msg.agentId || msg.agent || msg.sender_id || msg.senderId;
+      // Check if this is an event structure (content.parts[0].text)
+      if (msg.content && msg.content.parts && Array.isArray(msg.content.parts) && msg.content.parts[0]) {
+        content = msg.content.parts[0].text || '';
+        role = msg.content.role === 'model' ? 'assistant' : msg.content.role || 'user';
+        agentId = msg.author || '';
+        console.log(`🔍 [DEBUG] Extracted from events structure: content="${content.substring(0, 100)}...", role="${role}", agentId="${agentId}"`);
+      } else {
+        // Fallback to generic field extraction
+        content = msg.content || msg.text || msg.message || msg.body || msg.response || '';
+        agentId = msg.agent_id || msg.agentId || msg.agent || msg.sender_id || msg.senderId || '';
+        role = msg.role || msg.type || (agentId ? 'assistant' : 'user');
+        console.log(`🔍 [DEBUG] Extracted from generic structure: content="${typeof content === 'string' ? content.substring(0, 100) : content}...", role="${role}", agentId="${agentId}"`);
+      }
 
-      // Try different possible field names for timestamp
-      const timestamp = msg.timestamp || msg.created_at || msg.createdAt || msg.time || new Date().toISOString();
+      // Handle timestamp (convert numeric to ISO string if needed)
+      let timestamp = msg.timestamp || msg.created_at || msg.createdAt || msg.time || Date.now();
+      if (typeof timestamp === 'number') {
+        timestamp = new Date(timestamp).toISOString();
+      } else if (typeof timestamp !== 'string') {
+        timestamp = new Date().toISOString();
+      }
 
       const processedMsg = {
-        id: msg.id || msg._id || `msg_${index}`,
-        role: msg.role || msg.type || (agentId ? 'assistant' : 'user'),
+        id: msg.id || msg._id || msg.invocationId || `msg_${index}`,
+        role: role,
         content: content,
         agentId: agentId,
         timestamp: timestamp,

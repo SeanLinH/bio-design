@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -85,7 +85,8 @@ export default function SessionHistory() {
 
   // 刪除session的mutation
   const deleteSessionMutation = useMutation(
-    (sessionId: string) => ApiService.deleteSession(sessionId),
+    ({ sessionId, userId }: { sessionId: string; userId: string }) =>
+      ApiService.deleteSession(sessionId, userId),
     {
       onSuccess: () => {
         queryClient.invalidateQueries('sessionHistory');
@@ -106,9 +107,12 @@ export default function SessionHistory() {
     createSessionMutation.mutate(newSessionUserId);
   };
 
-  const handleDeleteSession = (sessionId: string) => {
+  const handleDeleteSession = (session: SessionRecord) => {
     if (window.confirm('確定要刪除這個會話嗎？')) {
-      deleteSessionMutation.mutate(sessionId);
+      deleteSessionMutation.mutate({
+        sessionId: session.id,
+        userId: session.userId || 'user1'
+      });
     }
   };
 
@@ -303,7 +307,7 @@ export default function SessionHistory() {
                         </IconButton>
                         <IconButton
                           size="small"
-                          onClick={() => handleDeleteSession(session.id)}
+                          onClick={() => handleDeleteSession(session)}
                           color="error"
                         >
                           <DeleteIcon />
