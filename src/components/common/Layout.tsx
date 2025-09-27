@@ -60,7 +60,7 @@ export default function Layout({ children }: LayoutProps) {
     <Box>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          AI Debate Platform
+          Bio Design - Multi-Agent Debate System
         </Typography>
       </Toolbar>
       <List>

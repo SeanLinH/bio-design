@@ -89,7 +89,7 @@ export default function Dashboard() {
   return (
     <Box>
       <Typography variant="h4" component="h1" gutterBottom>
-        系統總覽
+        Dashboard
       </Typography>
 
       {isLoading && <LinearProgress sx={{ mb: 3 }} />}
