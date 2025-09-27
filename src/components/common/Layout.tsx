@@ -31,11 +31,11 @@ interface LayoutProps {
 }
 
 const menuItems = [
-  { text: '總覽', icon: <DashboardIcon />, path: '/' },
-  { text: 'Agent管理', icon: <PeopleIcon />, path: '/agents' },
-  { text: '辯論設定', icon: <SettingsIcon />, path: '/setup' },
-  { text: '實時監控', icon: <MonitorIcon />, path: '/monitor' },
-  { text: '會話歷史', icon: <HistoryIcon />, path: '/sessions' },
+  { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+  { text: 'Agent Management', icon: <PeopleIcon />, path: '/agents' },
+  { text: 'Debate Setup', icon: <SettingsIcon />, path: '/setup' },
+  { text: 'Live Monitor', icon: <MonitorIcon />, path: '/monitor' },
+  { text: 'Session History', icon: <HistoryIcon />, path: '/sessions' },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -60,7 +60,7 @@ export default function Layout({ children }: LayoutProps) {
     <Box>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          AI辯論平台
+          AI Debate Platform
         </Typography>
       </Toolbar>
       <List>
@@ -99,7 +99,7 @@ export default function Layout({ children }: LayoutProps) {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            AI Agent 辯論平台
+            AI Agent Debate Platform
           </Typography>
         </Toolbar>
       </AppBar>

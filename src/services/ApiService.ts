@@ -79,7 +79,7 @@ const FIXED_SPACE_ID = 13;
 const FIXED_APP_ID = 12;
 const FIXED_MODEL_ID = 16;
 
-// Predefined agent IDs from your backend (根据CLAUDE.md更新)
+// Predefined agent IDs from your backend (updated according to CLAUDE.md)
 const PREDEFINED_AGENTS = {
   supply_chain: 131,
   materials_manager: 132,
@@ -105,7 +105,7 @@ export interface ApiResponse<T> {
 }
 
 class ApiService {
-  // 獲取所有 agents
+  // Get all agents
   async getAgents(): Promise<DebateAgent[]> {
     try {
       console.log('📋 Fetching agents from:', `/spaces/${FIXED_SPACE_ID}/agents?template=false`);
@@ -126,7 +126,7 @@ class ApiService {
     }
   }
 
-  // 獲取單個 agent 的詳細信息
+  // Get detailed information of a single agent
   async getAgentDetails(agentId: number): Promise<DebateAgent> {
     try {
       console.log('🔍 Fetching agent details for ID:', agentId);
@@ -390,7 +390,7 @@ class ApiService {
 
   // Execution - Use fetch for SSE
   async runSSE(question: string, userId: string = 'user1', sessionId?: string) {
-    // 如果沒有提供 sessionId，則創建新的 session
+    // If no sessionId provided, create new session
     const finalSessionId = sessionId || await this.createSession(userId);
     console.log(`Using session: ${finalSessionId}`);
 
@@ -409,8 +409,8 @@ class ApiService {
       streaming: true  // Enable streaming for SSE
     };
 
-    console.log('发送SSE请求:', requestUrl);
-    console.log('请求体:', JSON.stringify(requestBody, null, 2));
+    console.log('Sending SSE request:', requestUrl);
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -429,11 +429,11 @@ class ApiService {
       }
     );
 
-    console.log('SSE响应状态:', response.status, response.statusText);
+    console.log('SSE response status:', response.status, response.statusText);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('SSE请求失败:', response.status, errorText);
+      console.error('SSE request failed:', response.status, errorText);
       throw new Error(`SSE request failed: ${response.status} ${response.statusText}`);
     }
 
@@ -479,17 +479,17 @@ class ApiService {
     const agentName = this.getAgentNameFromId(agentIdStr);
 
     const displayNames: { [key: string]: string } = {
-      'supply_chain': '供應鏈專家',
-      'materials_manager': '物料管理師',
-      'logistics_expert': '物流專家',
-      'risk_management': '風險管理師',
-      'regulatory_authority': '法規機關',
-      'reporter': '報告員',
-      'debate_process': '辯論處理器',
-      'unmet_need_source': '需求分析器',
-      'convergencer': '收斂分析器',
-      'problem_solver': '問題解決器',
-      'entire_process': '全流程管理器'
+      'supply_chain': 'Supply Chain Expert',
+      'materials_manager': 'Materials Manager',
+      'logistics_expert': 'Logistics Expert',
+      'risk_management': 'Risk Management Specialist',
+      'regulatory_authority': 'Regulatory Authority',
+      'reporter': 'Reporter',
+      'debate_process': 'Debate Processor',
+      'unmet_need_source': 'Demand Analyzer',
+      'convergencer': 'Convergence Analyzer',
+      'problem_solver': 'Problem Solver',
+      'entire_process': 'End-to-End Process Manager'
     };
 
     return displayNames[agentName] || agentName;
@@ -639,20 +639,20 @@ class ApiService {
               {
                 id: '1',
                 role: 'user',
-                content: foundSession.question || '會話內容暫無記錄',
+                content: foundSession.question || 'No session content recorded',
                 timestamp: foundSession.createdAt,
               },
               {
                 id: '2',
                 role: 'assistant',
-                content: `此會話的詳細對話記錄暫時無法從伺服器獲取，顯示的是儲存在本地的基本資訊。\n\n**調試資訊:**\n- API 端點: /spaces/13/apps/12/users/${userId}/sessions/${sessionId}\n- 錯誤: 無法連接到後端伺服器\n- 建議: 檢查網路連接和伺服器狀態`,
+                content: `Detailed conversation records for this session cannot be retrieved from the server temporarily, showing basic information stored locally.\n\n**Debug Information:**\n- API Endpoint: /spaces/13/apps/12/users/${userId}/sessions/${sessionId}\n- Error: Unable to connect to backend server\n- Suggestion: Check network connection and server status`,
                 agentId: 'agent_137',
                 timestamp: foundSession.createdAt,
               },
               {
                 id: '3',
                 role: 'assistant',
-                content: '為了測試介面，這裡是一個模擬的專家回應範例:\n\n## 供應鏈風險分析\n\n根據當前市場狀況，我們識別出以下關鍵風險點:\n\n1. **供應商集中度風險**: 高度依賴單一供應商\n2. **運輸延遲風險**: 國際物流瓶頸\n3. **庫存管理風險**: 安全庫存水位偏低\n\n### 建議措施\n- 建立多元化供應商網絡\n- 增加戰略性庫存\n- 實施風險監控系統',
+                content: 'For interface testing, here is a simulated expert response example:\n\n## Supply Chain Risk Analysis\n\nBased on current market conditions, we have identified the following key risk points:\n\n1. **Supplier Concentration Risk**: High dependence on single suppliers\n2. **Transportation Delay Risk**: International logistics bottlenecks\n3. **Inventory Management Risk**: Low safety stock levels\n\n### Recommended Measures\n- Establish diversified supplier networks\n- Increase strategic inventory\n- Implement risk monitoring systems',
                 agentId: 'agent_131',
                 timestamp: new Date(Date.now() + 5000).toISOString(),
               }
@@ -666,20 +666,20 @@ class ApiService {
           id: sessionId,
           userId: userId,
           createdAt: new Date().toISOString(),
-          question: '這是一個測試會話，用於調試會話詳情功能',
+          question: 'This is a test session for debugging session detail functionality',
           status: 'completed',
           participantCount: 5,
           messages: [
             {
               id: 'mock_1',
               role: 'user',
-              content: '這是一個測試會話，用於調試會話詳情功能。請分析醫療供應鏈的短缺風險。',
+              content: 'This is a test session for debugging session detail functionality. Please analyze the shortage risks in medical supply chains.',
               timestamp: new Date().toISOString(),
             },
             {
               id: 'mock_2',
               role: 'assistant',
-              content: `**調試模式 - 模擬專家回應**\n\n由於無法連接到實際的API端點，這裡顯示的是模擬數據。\n\n實際API調用失敗的原因可能包括:\n- 網路連接問題\n- 伺服器尚未啟動\n- API端點不正確: /spaces/13/apps/12/users/${userId}/sessions/${sessionId}\n- 認證問題`,
+              content: `**Debug Mode - Simulated Expert Response**\n\nUnable to connect to actual API endpoint, showing simulated data.\n\nPossible reasons for actual API call failure:\n- Network connection issues\n- Server not yet started\n- Incorrect API endpoint: /spaces/13/apps/12/users/${userId}/sessions/${sessionId}\n- Authentication problems`,
               agentId: 'agent_137',
               timestamp: new Date(Date.now() + 1000).toISOString(),
             }

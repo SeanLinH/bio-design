@@ -242,7 +242,7 @@ export default function SessionDetail() {
                 創建時間
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                {new Date(session.createdAt).toLocaleString('zh-TW')}
+                {new Date(session.createdAt).toLocaleString('en-US')}
               </Typography>
 
               <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -298,7 +298,7 @@ export default function SessionDetail() {
                         {message.role === 'user' ? '用戶' : getAgentDisplayName(message.agentId)}
                       </Typography>
                       <Typography variant="caption" color="textSecondary">
-                        {new Date(message.timestamp).toLocaleString('zh-TW')}
+                        {new Date(message.timestamp).toLocaleString('en-US')}
                       </Typography>
                     </Box>
                   </Box>

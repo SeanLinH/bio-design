@@ -52,7 +52,7 @@ export default function SessionHistory() {
   const [selectedSession, setSelectedSession] = useState<SessionRecord | null>(null);
   const [newSessionUserId, setNewSessionUserId] = useState('user1');
 
-  // 獲取session歷史記錄 - 使用實際API端點 (CLAUDE.md #9)
+  // Get session history records - using actual API endpoint (CLAUDE.md #9)
   const { data: sessions = [], isLoading, error, refetch } = useQuery(
     ['sessionHistory', page, pageSize],
     () => ApiService.getSessionHistory(page, pageSize, 'user1'),
@@ -67,48 +67,48 @@ export default function SessionHistory() {
     }
   );
 
-  // 創建新session的mutation
+  // Mutation for creating new session
   const createSessionMutation = useMutation(
     (userId: string) => ApiService.createSession(userId),
     {
       onSuccess: (sessionId) => {
         queryClient.invalidateQueries('sessionHistory');
         setOpenDialog(false);
-        alert(`新會話已創建，Session ID: ${sessionId}`);
+        alert(`New session created, Session ID: ${sessionId}`);
       },
       onError: (error) => {
         console.error('Failed to create session:', error);
-        alert('創建會話失敗');
+        alert('Failed to create session.');
       },
     }
   );
 
-  // 刪除session的mutation
+  // Mutation for deleting session
   const deleteSessionMutation = useMutation(
     ({ sessionId, userId }: { sessionId: string; userId: string }) =>
       ApiService.deleteSession(sessionId, userId),
     {
       onSuccess: () => {
         queryClient.invalidateQueries('sessionHistory');
-        alert('會話已刪除');
+        alert('Session deleted successfully.');
       },
       onError: (error) => {
         console.error('Failed to delete session:', error);
-        alert('刪除會話失敗');
+        alert('Failed to delete session.');
       },
     }
   );
 
   const handleCreateSession = () => {
     if (!newSessionUserId.trim()) {
-      alert('請輸入用戶ID');
+      alert('Please enter User ID.');
       return;
     }
     createSessionMutation.mutate(newSessionUserId);
   };
 
   const handleDeleteSession = (session: SessionRecord) => {
-    if (window.confirm('確定要刪除這個會話嗎？')) {
+    if (window.confirm('Are you sure you want to delete this session?')) {
       deleteSessionMutation.mutate({
         sessionId: session.id,
         userId: session.userId || 'user1'
@@ -118,7 +118,7 @@ export default function SessionHistory() {
 
   const handleViewSession = (session: SessionRecord) => {
     setSelectedSession(session);
-    // 導航到會話詳情頁面，使用實際的 session ID
+    // Navigate to session detail page using actual session ID
     console.log('🔍 [SessionHistory] Navigating to session detail:', session.id);
     navigate(`/sessions/${session.id}`);
   };
@@ -139,13 +139,13 @@ export default function SessionHistory() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'active':
-        return '進行中';
+        return 'Active';
       case 'completed':
-        return '已完成';
+        return 'Completed';
       case 'failed':
-        return '失敗';
+        return 'Failed';
       default:
-        return '未知';
+        return 'Unknown';
     }
   };
 
@@ -155,7 +155,7 @@ export default function SessionHistory() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
-          會話歷史記錄
+          Session History
         </Typography>
         <Box>
           <Button
@@ -164,33 +164,33 @@ export default function SessionHistory() {
             onClick={() => refetch()}
             sx={{ mr: 2 }}
           >
-            重新載入
+            Reload
           </Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpenDialog(true)}
           >
-            創建新會話
+            Create New Session
           </Button>
         </Box>
       </Box>
 
       {error && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          無法連接到會話歷史API，正在顯示備用數據。請檢查網路連接或伺服器狀態。
+          Unable to connect to session history API, showing backup data. Please check network connection or server status.
           <br />
-          <small>API端點: /spaces/13/apps/12/users/user1/sessions</small>
+          <small>API Endpoint: /spaces/13/apps/12/users/user1/sessions</small>
         </Alert>
       )}
 
-      {/* 統計卡片 */}
+      {/* Statistics Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom variant="h6">
-                總會話數
+                Total Sessions
               </Typography>
               <Typography variant="h4" component="h2" color="primary">
                 {sessions.length || 0}
@@ -202,7 +202,7 @@ export default function SessionHistory() {
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom variant="h6">
-                進行中
+                Active
               </Typography>
               <Typography variant="h4" component="h2" color="primary">
                 {sessions.filter((s: SessionRecord) => s.status === 'active').length || 0}
@@ -214,7 +214,7 @@ export default function SessionHistory() {
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom variant="h6">
-                已完成
+                Completed
               </Typography>
               <Typography variant="h4" component="h2" color="success.main">
                 {sessions.filter((s: SessionRecord) => s.status === 'completed').length || 0}
@@ -226,7 +226,7 @@ export default function SessionHistory() {
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom variant="h6">
-                失敗
+                Failed
               </Typography>
               <Typography variant="h4" component="h2" color="error.main">
                 {sessions.filter((s: SessionRecord) => s.status === 'failed').length || 0}
@@ -236,23 +236,23 @@ export default function SessionHistory() {
         </Grid>
       </Grid>
 
-      {/* 會話列表 */}
+      {/* Session List */}
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            會話列表
+            Session List
           </Typography>
           <TableContainer component={Paper} elevation={0}>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Session ID</TableCell>
-                  <TableCell>用戶ID</TableCell>
-                  <TableCell>創建時間</TableCell>
-                  <TableCell>問題</TableCell>
-                  <TableCell>狀態</TableCell>
-                  <TableCell>參與者數量</TableCell>
-                  <TableCell>操作</TableCell>
+                  <TableCell>User ID</TableCell>
+                  <TableCell>Created Time</TableCell>
+                  <TableCell>Question</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Participants</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -260,7 +260,7 @@ export default function SessionHistory() {
                   <TableRow>
                     <TableCell colSpan={7} align="center">
                       <Typography color="textSecondary">
-                        暫無會話記錄
+                        No session records
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -274,7 +274,7 @@ export default function SessionHistory() {
                       </TableCell>
                       <TableCell>{session.userId}</TableCell>
                       <TableCell>
-                        {new Date(session.createdAt).toLocaleString('zh-TW')}
+                        {new Date(session.createdAt).toLocaleString('en-US')}
                       </TableCell>
                       <TableCell>
                         <Typography
@@ -286,7 +286,7 @@ export default function SessionHistory() {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {session.question || '未設定'}
+                          {session.question || 'Not set'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -320,7 +320,7 @@ export default function SessionHistory() {
             </Table>
           </TableContainer>
 
-          {/* 分頁 */}
+          {/* Pagination */}
           {sessions.length > 0 && (
             <Box display="flex" justifyContent="center" mt={3}>
               <Pagination
@@ -334,27 +334,27 @@ export default function SessionHistory() {
         </CardContent>
       </Card>
 
-      {/* 創建新會話對話框 */}
+      {/* Create New Session Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>創建新會話</DialogTitle>
+        <DialogTitle>Create New Session</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
-            label="用戶ID"
+            label="User ID"
             value={newSessionUserId}
             onChange={(e) => setNewSessionUserId(e.target.value)}
             margin="normal"
-            placeholder="輸入用戶ID，例如：user1"
+            placeholder="Enter User ID, e.g.: user1"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>取消</Button>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button
             onClick={handleCreateSession}
             variant="contained"
             disabled={createSessionMutation.isLoading}
           >
-            {createSessionMutation.isLoading ? '創建中...' : '創建'}
+            {createSessionMutation.isLoading ? 'Creating...' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

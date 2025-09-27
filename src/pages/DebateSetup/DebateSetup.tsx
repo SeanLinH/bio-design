@@ -71,17 +71,17 @@ export default function DebateSetup() {
 
   const handleStartDebate = async () => {
     if (!question.trim()) {
-      alert('請輸入辯論問題');
+      alert('Please enter debate question.');
       return;
     }
 
     if (actualParticipants === 0) {
-      alert('辯論處理器未配置任何Agent，請先設定辯論參與者');
+      alert('Debate processor has no configured Agents. Please set up debate participants first.');
       return;
     }
 
     if (coreExperts.length < 5) {
-      alert('核心專家Agent不足，需要5個核心專家才能開始辯論');
+      alert('Insufficient core expert Agents. Need 5 core experts to start debate.');
       return;
     }
 
@@ -110,7 +110,7 @@ export default function DebateSetup() {
       });
     } catch (error) {
       console.error('Failed to start debate:', error);
-      alert('啟動辯論失敗，請檢查網路連線和API狀態');
+      alert('Failed to start debate. Please check network connection and API status.');
     } finally {
       setIsStarting(false);
     }
@@ -121,7 +121,7 @@ export default function DebateSetup() {
   return (
     <Box>
       <Typography variant="h4" component="h1" gutterBottom>
-        辯論設定
+        Debate Setup
       </Typography>
 
       <Grid container spacing={3}>

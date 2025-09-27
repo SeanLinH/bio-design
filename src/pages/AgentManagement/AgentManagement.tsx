@@ -69,7 +69,7 @@ export default function AgentManagement() {
     },
     onError: (error) => {
       console.error('Failed to create agent:', error);
-      alert('創建Agent失敗，請檢查網路連線和輸入內容');
+      alert('Failed to create Agent. Please check network connection and input.');
     },
   });
 
@@ -96,7 +96,7 @@ export default function AgentManagement() {
     },
     onError: (error) => {
       console.error('Failed to update reporter:', error);
-      alert('更新報告員失敗，請檢查網路連線');
+      alert('Failed to update reporter. Please check network connection.');
     },
   });
 
@@ -132,7 +132,7 @@ export default function AgentManagement() {
         });
       } catch (error) {
         console.error('Failed to load agent details:', error);
-        alert('載入Agent詳細信息失敗');
+        alert('Failed to load Agent detailed information.');
         return;
       }
     } else {
@@ -168,7 +168,7 @@ export default function AgentManagement() {
   };
 
   const handleDelete = (agentId: number) => {
-    if (window.confirm('確定要刪除這個Agent嗎？')) {
+    if (window.confirm('Are you sure you want to delete this Agent?')) {
       deleteAgentMutation.mutate(agentId);
     }
   };
@@ -220,26 +220,26 @@ export default function AgentManagement() {
     ];
 
     if (coreExpertNames.includes(agent.name)) {
-      return { label: '核心專家', color: 'primary' as const };
+      return { label: 'Core Expert', color: 'primary' as const };
     } else if (agent.name === 'reporter') {
-      return { label: '報告員', color: 'secondary' as const };
+      return { label: 'Reporter', color: 'secondary' as const };
     } else if (agent.name === 'debate_process') {
-      return { label: '辯論處理器', color: 'info' as const };
+      return { label: 'Debate Processor', color: 'info' as const };
     } else {
-      return { label: '自定義', color: 'default' as const };
+      return { label: 'Custom', color: 'default' as const };
     }
   };
 
   const templates = ApiService.getDefaultAgentTemplates();
 
   if (isLoading) return <LinearProgress />;
-  if (error) return <Alert severity="error">載入Agent失敗</Alert>;
+  if (error) return <Alert severity="error">Failed to load Agents</Alert>;
 
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
-          Agent 管理
+          Agent Management
         </Typography>
         <Box>
           <Button
@@ -247,14 +247,14 @@ export default function AgentManagement() {
             onClick={(e) => setTemplateMenuAnchor(e.currentTarget)}
             sx={{ mr: 2 }}
           >
-            使用模板
+            Use Template
           </Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
           >
-            新增Agent
+            Add Agent
           </Button>
         </Box>
       </Box>
@@ -286,8 +286,8 @@ export default function AgentManagement() {
                   </Typography>
 
                   <Box display="flex" gap={1} mb={2}>
-                    <Chip label={`溫度: ${agent.temperature}`} size="small" variant="outlined" />
-                    <Chip label={`最大Tokens: ${agent.max_tokens}`} size="small" variant="outlined" />
+                    <Chip label={`Temperature: ${agent.temperature}`} size="small" variant="outlined" />
+                    <Chip label={`Max Tokens: ${agent.max_tokens}`} size="small" variant="outlined" />
                   </Box>
 
                   <Typography variant="body2" color="text.secondary" sx={{
@@ -360,13 +360,13 @@ export default function AgentManagement() {
       {/* Agent Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingAgent ? '編輯Agent' : '新增Agent'}
+          {editingAgent ? 'Edit Agent' : 'Add Agent'}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="名稱"
+              label="Name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               margin="normal"
@@ -374,7 +374,7 @@ export default function AgentManagement() {
             />
             <TextField
               fullWidth
-              label="描述"
+              label="Description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               margin="normal"
@@ -382,7 +382,7 @@ export default function AgentManagement() {
             />
             <TextField
               fullWidth
-              label="指令"
+              label="Instruction"
               value={formData.instruction}
               onChange={(e) => setFormData({ ...formData, instruction: e.target.value })}
               margin="normal"
@@ -390,7 +390,7 @@ export default function AgentManagement() {
               rows={8}
             />
             <Box sx={{ mt: 3, mb: 2 }}>
-              <Typography gutterBottom>溫度: {formData.temperature}</Typography>
+              <Typography gutterBottom>Temperature: {formData.temperature}</Typography>
               <Slider
                 value={formData.temperature}
                 onChange={(_, value) => setFormData({ ...formData, temperature: value as number })}
@@ -404,7 +404,7 @@ export default function AgentManagement() {
             </Box>
             <TextField
               fullWidth
-              label="最大Tokens"
+              label="Max Tokens"
               type="number"
               value={formData.max_tokens}
               onChange={(e) => setFormData({ ...formData, max_tokens: parseInt(e.target.value) })}
@@ -414,13 +414,13 @@ export default function AgentManagement() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>取消</Button>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button
             onClick={handleSave}
             variant="contained"
             disabled={createAgentMutation.isLoading || updateAgentMutation.isLoading || updateReporterMutation.isLoading}
           >
-            {editingAgent ? '更新' : '創建'}
+            {editingAgent ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

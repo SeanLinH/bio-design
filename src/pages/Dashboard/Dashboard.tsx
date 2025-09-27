@@ -98,7 +98,7 @@ export default function Dashboard() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="總計Agent"
+            title="Total Agents"
             value={stats.totalAgents}
             icon={<SmartToyIcon sx={{ fontSize: 40 }} />}
             color="primary.main"
@@ -106,7 +106,7 @@ export default function Dashboard() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="核心專家"
+            title="Core Experts"
             value={stats.coreExperts}
             icon={<PeopleIcon sx={{ fontSize: 40 }} />}
             color="success.main"
@@ -114,7 +114,7 @@ export default function Dashboard() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="自定義Agent"
+            title="Custom Agents"
             value={stats.customAgents}
             icon={<SmartToyIcon sx={{ fontSize: 40 }} />}
             color="info.main"
@@ -122,7 +122,7 @@ export default function Dashboard() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="會話記錄"
+            title="Session Records"
             value={stats.recentSessions}
             icon={<TimelineIcon sx={{ fontSize: 40 }} />}
             color="warning.main"
@@ -135,7 +135,7 @@ export default function Dashboard() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                快速操作
+                Quick Actions
               </Typography>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Button
@@ -144,7 +144,7 @@ export default function Dashboard() {
                   onClick={() => navigate('/setup')}
                   size="large"
                 >
-                  開始新的辯論
+                  Start New Debate
                 </Button>
                 <Button
                   variant="outlined"
@@ -152,7 +152,7 @@ export default function Dashboard() {
                   onClick={() => navigate('/agents')}
                   size="large"
                 >
-                  管理Agent
+                  Manage Agents
                 </Button>
                 <Button
                   variant="outlined"
@@ -160,7 +160,7 @@ export default function Dashboard() {
                   onClick={() => navigate('/monitor')}
                   size="large"
                 >
-                  監控辯論
+                  Monitor Debate
                 </Button>
               </Box>
             </CardContent>
@@ -177,24 +177,24 @@ export default function Dashboard() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                系統狀態
+                System Status
               </Typography>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Typography>API連接狀態</Typography>
-                  <Chip label="正常" color="success" size="small" />
+                  <Typography>API Connection Status</Typography>
+                  <Chip label="Normal" color="success" size="small" />
                 </Box>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Typography>核心專家Agent</Typography>
+                  <Typography>Core Expert Agents</Typography>
                   <Chip
-                    label={`${stats.coreExperts}/5 可用`}
+                    label={`${stats.coreExperts}/5 Available`}
                     color={stats.coreExperts === 5 ? "success" : "warning"}
                     size="small"
                   />
                 </Box>
                 <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Typography>辯論處理器</Typography>
-                  <Chip label="就緒" color="success" size="small" />
+                  <Typography>Debate Processor</Typography>
+                  <Chip label="Ready" color="success" size="small" />
                 </Box>
               </Box>
             </CardContent>
