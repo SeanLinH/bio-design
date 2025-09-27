@@ -130,13 +130,13 @@ export default function DebateSetup() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                辯論配置
+                Debate Configuration
               </Typography>
 
               <TextField
                 fullWidth
-                label="辯論問題"
-                placeholder="請輸入您想要討論的問題..."
+                label="Debate Question"
+                placeholder="Please enter the question you want to discuss..."
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 multiline
@@ -148,22 +148,22 @@ export default function DebateSetup() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="使用者ID"
+                    label="User ID"
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
-                    <InputLabel>最大迭代次數</InputLabel>
+                    <InputLabel>Max Iterations</InputLabel>
                     <Select
                       value={maxIterations}
-                      label="最大迭代次數"
+                      label="Max Iterations"
                       onChange={(e) => setMaxIterations(e.target.value as number)}
                     >
                       {[1, 2, 3, 4, 5].map((num) => (
                         <MenuItem key={num} value={num}>
-                          {num} 次
+                          {num} iterations
                         </MenuItem>
                       ))}
                     </Select>
@@ -180,7 +180,7 @@ export default function DebateSetup() {
                   disabled={isStarting || !question.trim()}
                   sx={{ flex: 1 }}
                 >
-                  {isStarting ? '啟動中...' : '開始辯論'}
+                  {isStarting ? 'Starting...' : 'Start Debate'}
                 </Button>
                 <Button
                   variant="outlined"
@@ -188,7 +188,7 @@ export default function DebateSetup() {
                   onClick={() => refetch()}
                   disabled={isLoading}
                 >
-                  重新載入
+                  Reload
                 </Button>
               </Box>
             </CardContent>
@@ -200,7 +200,7 @@ export default function DebateSetup() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                辯論摘要
+                Debate Summary
               </Typography>
 
               <List dense>
@@ -209,11 +209,11 @@ export default function DebateSetup() {
                     <PeopleIcon color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="預設專家"
-                    secondary={`${coreExperts.length} 個`}
+                    primary="Default Experts"
+                    secondary={`${coreExperts.length} experts`}
                   />
                   <Chip
-                    label={coreExperts.length === 5 ? "完整" : "不足"}
+                    label={coreExperts.length === 5 ? "Complete" : "Insufficient"}
                     color={coreExperts.length === 5 ? "success" : "warning"}
                     size="small"
                   />
@@ -224,8 +224,8 @@ export default function DebateSetup() {
                     <SmartToyIcon color="secondary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="自定義專家"
-                    secondary={`${customAgents.length} 個`}
+                    primary="Custom Experts"
+                    secondary={`${customAgents.length} experts`}
                   />
                 </ListItem>
 
@@ -233,11 +233,11 @@ export default function DebateSetup() {
 
                 <ListItem>
                   <ListItemText
-                    primary="辯論處理器參與者"
-                    secondary={`${actualParticipants} 個 (實際)`}
+                    primary="Debate Processor Participants"
+                    secondary={`${actualParticipants} (actual)`}
                   />
                   <Chip
-                    label={actualParticipants > 0 ? "已配置" : "未配置"}
+                    label={actualParticipants > 0 ? "Configured" : "Not Configured"}
                     color={actualParticipants > 0 ? "success" : "error"}
                     size="small"
                   />
@@ -245,21 +245,21 @@ export default function DebateSetup() {
 
                 <ListItem>
                   <ListItemText
-                    primary="最大迭代次數"
-                    secondary={`${maxIterations} 次`}
+                    primary="Max Iterations"
+                    secondary={`${maxIterations} iterations`}
                   />
                 </ListItem>
               </List>
 
               {coreExperts.length < 5 && (
                 <Alert severity="warning" sx={{ mt: 2 }}>
-                  核心專家不足，需要5個才能啟動辯論
+                  Insufficient core experts, need 5 to start debate
                 </Alert>
               )}
 
               {error && (
                 <Alert severity="error" sx={{ mt: 2 }}>
-                  載入Agent失敗，請檢查API連線
+                  Failed to load Agents, please check API connection
                 </Alert>
               )}
             </CardContent>
@@ -269,11 +269,11 @@ export default function DebateSetup() {
           <Card sx={{ mt: 2 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                參與Agent
+                Participating Agents
               </Typography>
 
               <Typography variant="subtitle2" color="primary" gutterBottom>
-                核心專家 ({coreExperts.length}/5)
+                Core Experts ({coreExperts.length}/5)
               </Typography>
               <Box sx={{ mb: 2 }}>
                 {coreExperts.map((agent: DebateAgent) => (
@@ -290,7 +290,7 @@ export default function DebateSetup() {
               {customAgents.length > 0 && (
                 <>
                   <Typography variant="subtitle2" color="secondary" gutterBottom>
-                    自定義專家 ({customAgents.length})
+                    Custom Experts ({customAgents.length})
                   </Typography>
                   <Box>
                     {customAgents.map((agent: DebateAgent) => (

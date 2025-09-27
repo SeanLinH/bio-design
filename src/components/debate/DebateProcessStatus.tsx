@@ -119,7 +119,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
       const agent = allAgents.find((a: any) => a.id === agentId);
       const agentName = agent?.name || `Agent ${agentId}`;
       console.log(`✅ [UI] Successfully added agent ${agentId} (${agentName}) to debate process`);
-      showNotification(`已成功將 ${agentName} 加入辯論`, 'success');
+      showNotification(`Successfully added ${agentName} to debate`, 'success');
     },
     onError: (error: any, agentId) => {
       setLoadingAgentId(null);
@@ -128,15 +128,15 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
 
       console.error(`❌ [UI] Failed to add agent ${agentId} (${agentName}) to debate process:`, error);
 
-      let errorMessage = `添加 ${agentName} 到辯論失敗`;
+      let errorMessage = `Failed to add ${agentName} to debate`;
       if (error?.message?.includes('not currently in the debate process')) {
-        errorMessage = `${agentName} 已經在辯論中`;
+        errorMessage = `${agentName} is already in the debate`;
       } else if (error?.message?.includes('network') || error?.code === 'ERR_NETWORK') {
-        errorMessage = `網路連線錯誤，請檢查後端伺服器狀態`;
+        errorMessage = `Network connection error, please check backend server status`;
       } else if (error?.response?.status === 404) {
-        errorMessage = `找不到 Agent ${agentName}`;
+        errorMessage = `Agent ${agentName} not found`;
       } else if (error?.response?.status >= 500) {
-        errorMessage = `伺服器錯誤，請稍後再試`;
+        errorMessage = `Server error, please try again later`;
       }
 
       showNotification(errorMessage, 'error');
@@ -159,7 +159,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
       const agent = allAgents.find((a: any) => a.id === agentId);
       const agentName = agent?.name || `Agent ${agentId}`;
       console.log(`✅ [UI] Successfully removed agent ${agentId} (${agentName}) from debate process`);
-      showNotification(`已成功將 ${agentName} 從辯論中移除`, 'success');
+      showNotification(`Successfully removed ${agentName} from debate`, 'success');
     },
     onError: (error: any, agentId) => {
       setLoadingAgentId(null);
@@ -168,17 +168,17 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
 
       console.error(`❌ [UI] Failed to remove agent ${agentId} (${agentName}) from debate process:`, error);
 
-      let errorMessage = `移除 ${agentName} 失敗`;
+      let errorMessage = `Failed to remove ${agentName}`;
       if (error?.message?.includes('Cannot remove all agents')) {
-        errorMessage = `無法移除所有Agent，至少需要保留一個`;
+        errorMessage = `Cannot remove all Agents, at least one must be kept`;
       } else if (error?.message?.includes('not currently in the debate process')) {
-        errorMessage = `${agentName} 不在辯論中`;
+        errorMessage = `${agentName} is not in the debate`;
       } else if (error?.message?.includes('network') || error?.code === 'ERR_NETWORK') {
-        errorMessage = `網路連線錯誤，請檢查後端伺服器狀態`;
+        errorMessage = `Network connection error, please check backend server status`;
       } else if (error?.response?.status === 404) {
-        errorMessage = `找不到 Agent ${agentName}`;
+        errorMessage = `Agent ${agentName} not found`;
       } else if (error?.response?.status >= 500) {
-        errorMessage = `伺服器錯誤，請稍後再試`;
+        errorMessage = `Server error, please try again later`;
       }
 
       showNotification(errorMessage, 'error');
@@ -198,7 +198,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
   if (processError) {
     return (
       <Alert severity="error">
-        無法載入辯論處理器配置
+        Unable to load debate processor configuration
       </Alert>
     );
   }
@@ -259,7 +259,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
 
     if (currentAgentCount <= 1) {
       console.log('🚫 [UI-DEBUG] Cannot remove - would leave no agents');
-      showNotification('無法移除所有Agent，至少需要保留一個', 'warning');
+      showNotification('Cannot remove all Agents, at least one must be kept', 'warning');
       return;
     }
 
@@ -268,8 +268,8 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
       console.log('🎯 [UI-DEBUG] Core expert detected - showing confirmation dialog');
       setConfirmDialog({
         open: true,
-        title: '確認移除核心專家',
-        message: `您確定要將核心專家 "${agentName}" 從辯論中移除嗎？這可能會影響辯論的完整性。`,
+        title: 'Confirm Removing Core Expert',
+        message: `Are you sure you want to remove core expert "${agentName}" from the debate? This may affect the integrity of the debate.`,
         agentName,
         onConfirm: () => {
           console.log('🎯 [UI-DEBUG] Core expert removal confirmed - calling mutation');
@@ -296,9 +296,9 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
   // Helper function to get agent type info
   const getAgentTypeInfo = (agent: any) => {
     if (expectedCoreAgents.includes(agent.id)) {
-      return { label: '核心專家', color: 'primary' as const };
+      return { label: 'Core Expert', color: 'primary' as const };
     } else {
-      return { label: '自定義', color: 'secondary' as const };
+      return { label: 'Custom', color: 'secondary' as const };
     }
   };
 
@@ -342,7 +342,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
             onClick={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
             color="primary"
           >
-            取消
+            Cancel
           </Button>
           <Button
             onClick={confirmDialog.onConfirm}
@@ -350,7 +350,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
             variant="contained"
             autoFocus
           >
-            確認移除
+            Confirm Remove
           </Button>
         </DialogActions>
       </Dialog>
@@ -363,10 +363,10 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
         <Box display="flex" alignItems="center" gap={1}>
           <SmartToyIcon color={isOptimal ? 'success' : 'warning'} />
           <Typography variant="body2">
-            辯論參與者: {processAgentIds.length} 個
+            Debate Participants: {processAgentIds.length}
           </Typography>
           <Chip
-            label={isOptimal ? "就緒" : "需要更新"}
+            label={isOptimal ? "Ready" : "Needs Update"}
             color={isOptimal ? "success" : "warning"}
             size="small"
           />
@@ -387,24 +387,24 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h6" display="flex" alignItems="center" gap={1}>
               <SmartToyIcon />
-              辯論處理器管理
+              Debate Processor Management
             </Typography>
             {isOptimal ? (
-              <Chip label="就緒" color="success" icon={<CheckCircleIcon />} />
+              <Chip label="Ready" color="success" icon={<CheckCircleIcon />} />
             ) : (
-              <Chip label="需要更新" color="warning" icon={<WarningIcon />} />
+              <Chip label="Needs Update" color="warning" icon={<WarningIcon />} />
             )}
           </Box>
 
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            當前參與辯論的Agent: {processAgentIds.length} 個
+            Current Agents Participating in Debate: {processAgentIds.length}
           </Typography>
 
           {hasIssues && (
             <Alert severity="warning" sx={{ mb: 2 }}>
               {missingCoreAgents.length > 0 && (
                 <Typography variant="body2">
-                  缺少 {missingCoreAgents.length} 個核心專家Agent
+                  Missing {missingCoreAgents.length} core expert Agents
                 </Typography>
               )}
             </Alert>
@@ -416,7 +416,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" display="flex" alignItems="center" gap={1} mb={2}>
                   <PersonRemoveIcon color="primary" />
-                  辯論參與者 ({processAgentIds.length})
+                  Debate Participants ({processAgentIds.length})
                 </Typography>
                 <List dense>
                   {processAgents.map((agent: any) => {
@@ -446,7 +446,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
                           secondary={`ID: ${agent.id}`}
                         />
                         <ListItemSecondaryAction>
-                          <Tooltip title="從辯論中移除">
+                          <Tooltip title="Remove from Debate">
                             <IconButton
                               edge="end"
                               size="small"
@@ -468,8 +468,8 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
                   {processAgents.length === 0 && (
                     <ListItem>
                       <ListItemText
-                        primary="尚無參與的Agent"
-                        secondary="請從右側可用Agent中選擇"
+                        primary="No Participating Agents"
+                        secondary="Please select from available Agents on the right"
                       />
                     </ListItem>
                   )}
@@ -482,7 +482,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" display="flex" alignItems="center" gap={1} mb={2}>
                   <PersonAddIcon color="secondary" />
-                  可用Agent ({availableAgents.length})
+                  Available Agents ({availableAgents.length})
                 </Typography>
                 <List dense>
                   {availableAgents.map((agent: any) => {
@@ -512,7 +512,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
                           secondary={`ID: ${agent.id}`}
                         />
                         <ListItemSecondaryAction>
-                          <Tooltip title="加入辯論">
+                          <Tooltip title="Join Debate">
                             <IconButton
                               edge="end"
                               size="small"
@@ -534,8 +534,8 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
                   {availableAgents.length === 0 && (
                     <ListItem>
                       <ListItemText
-                        primary="所有Agent已參與辯論"
-                        secondary="可建立新的自定義Agent"
+                        primary="All Agents are Participating in Debate"
+                        secondary="You can create new custom Agents"
                       />
                     </ListItem>
                   )}
@@ -556,7 +556,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
                     disabled={updateProcessMutation.isLoading}
                     fullWidth
                   >
-                    {updateProcessMutation.isLoading ? '更新中...' : '同步所有可用Agent'}
+                    {updateProcessMutation.isLoading ? 'Updating...' : 'Sync All Available Agents'}
                   </Button>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -568,7 +568,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
                     disabled={updateProcessMutation.isLoading}
                     fullWidth
                   >
-                    重置為核心專家
+                    Reset to Core Experts
                   </Button>
                 </Grid>
               </Grid>
@@ -589,24 +589,24 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6" display="flex" alignItems="center" gap={1}>
             <SmartToyIcon />
-            辯論處理器狀態
+            Debate Processor Status
           </Typography>
           {isOptimal ? (
-            <Chip label="就緒" color="success" icon={<CheckCircleIcon />} />
+            <Chip label="Ready" color="success" icon={<CheckCircleIcon />} />
           ) : (
-            <Chip label="需要更新" color="warning" icon={<WarningIcon />} />
+            <Chip label="Needs Update" color="warning" icon={<WarningIcon />} />
           )}
         </Box>
 
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          當前參與辯論的Agent: {processAgentIds.length} 個
+          Current Agents Participating in Debate: {processAgentIds.length}
         </Typography>
 
         {hasIssues && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {missingCoreAgents.length > 0 && (
               <Typography variant="body2">
-                缺少 {missingCoreAgents.length} 個核心專家Agent
+                Missing {missingCoreAgents.length} core expert Agents
               </Typography>
             )}
           </Alert>
@@ -623,7 +623,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
               </ListItemIcon>
               <ListItemText
                 primary={agent.name}
-                secondary={`ID: ${agent.id} ${expectedCoreAgents.includes(agent.id) ? '(核心專家)' : '(自定義)'}`}
+                secondary={`ID: ${agent.id} ${expectedCoreAgents.includes(agent.id) ? '(Core Expert)' : '(Custom)'}`}
               />
             </ListItem>
           ))}
@@ -638,7 +638,7 @@ export default function DebateProcessStatus({ showActions = true, compact = fals
               disabled={updateProcessMutation.isLoading}
               fullWidth
             >
-              {updateProcessMutation.isLoading ? '更新中...' : '同步所有可用Agent'}
+              {updateProcessMutation.isLoading ? 'Updating...' : 'Sync All Available Agents'}
             </Button>
           </Box>
         )}

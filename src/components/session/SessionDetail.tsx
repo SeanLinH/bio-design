@@ -104,18 +104,18 @@ export default function SessionDetail() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'active':
-        return '進行中';
+        return 'Active';
       case 'completed':
-        return '已完成';
+        return 'Completed';
       case 'failed':
-        return '失敗';
+        return 'Failed';
       default:
-        return '未知';
+        return 'Unknown';
     }
   };
 
   const getAgentDisplayName = (agentId?: string) => {
-    if (!agentId) return '系統';
+    if (!agentId) return 'System';
     return ApiService.getAgentDisplayName(agentId);
   };
 
@@ -139,7 +139,7 @@ export default function SessionDetail() {
       <Box>
         <LinearProgress />
         <Typography variant="h6" sx={{ mt: 2, textAlign: 'center' }}>
-          載入會話詳情中...
+          Loading session details...
         </Typography>
       </Box>
     );
@@ -149,13 +149,13 @@ export default function SessionDetail() {
     return (
       <Box>
         <Alert severity="error" sx={{ mb: 3 }}>
-          無法載入會話詳情，請檢查會話ID是否正確
+          Unable to load session details. Please check if the session ID is correct.
         </Alert>
 
         {/* Debug information */}
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2" gutterBottom>
-            調試資訊:
+            Debug Information:
           </Typography>
           <Typography variant="caption" component="div">
             Session ID: {sessionId}
@@ -164,13 +164,13 @@ export default function SessionDetail() {
             User ID: {userId}
           </Typography>
           <Typography variant="caption" component="div">
-            API 端點: /spaces/13/apps/12/users/{userId}/sessions/{sessionId}
+            API Endpoint: /spaces/13/apps/12/users/{userId}/sessions/{sessionId}
           </Typography>
           <Typography variant="caption" component="div">
             Error: {(error as any)?.message || 'Unknown error'}
           </Typography>
           <Typography variant="caption" component="div">
-            請打開瀏覽器開發者工具的Console查看詳細日誌
+            Please open browser developer tools Console to view detailed logs
           </Typography>
         </Alert>
 
@@ -179,7 +179,7 @@ export default function SessionDetail() {
           startIcon={<ArrowBackIcon />}
           onClick={handleBackToHistory}
         >
-          返回會話歷史
+          Back to Session History
         </Button>
       </Box>
     );
@@ -195,7 +195,7 @@ export default function SessionDetail() {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h4" component="h1">
-          會話詳情
+          Session Details
         </Typography>
       </Box>
 
@@ -206,24 +206,24 @@ export default function SessionDetail() {
             <Grid item xs={12} md={6}>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <PersonIcon color="primary" />
-                <Typography variant="h6">基本資訊</Typography>
+                <Typography variant="h6">Basic Information</Typography>
               </Box>
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                會話ID
+                Session ID
               </Typography>
               <Typography variant="body1" fontFamily="monospace" sx={{ mb: 2 }}>
                 {session.id}
               </Typography>
 
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                用戶ID
+                User ID
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
                 {session.userId}
               </Typography>
 
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                狀態
+                Status
               </Typography>
               <Chip
                 label={getStatusText(session.status)}
@@ -236,27 +236,27 @@ export default function SessionDetail() {
             <Grid item xs={12} md={6}>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <AccessTimeIcon color="primary" />
-                <Typography variant="h6">時間資訊</Typography>
+                <Typography variant="h6">Time Information</Typography>
               </Box>
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                創建時間
+                Created Time
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
                 {new Date(session.createdAt).toLocaleString('en-US')}
               </Typography>
 
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                參與專家數量
+                Participating Experts
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                {session.participantCount || 0} 位專家
+                {session.participantCount || 0} experts
               </Typography>
             </Grid>
 
             {session.question && (
               <Grid item xs={12}>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
-                  初始問題
+                  Initial Question
                 </Typography>
                 <Paper elevation={1} sx={{ p: 2, backgroundColor: 'grey.50' }}>
                   <Typography variant="body1">
@@ -274,7 +274,7 @@ export default function SessionDetail() {
         <CardContent>
           <Box display="flex" alignItems="center" gap={1} mb={3}>
             <PsychologyIcon color="primary" />
-            <Typography variant="h6">專家討論內容</Typography>
+            <Typography variant="h6">Expert Discussion Content</Typography>
           </Box>
 
           {session.messages && session.messages.length > 0 ? (
@@ -295,7 +295,7 @@ export default function SessionDetail() {
                     </Avatar>
                     <Box>
                       <Typography variant="subtitle2" fontWeight="bold">
-                        {message.role === 'user' ? '用戶' : getAgentDisplayName(message.agentId)}
+                        {message.role === 'user' ? 'User' : getAgentDisplayName(message.agentId)}
                       </Typography>
                       <Typography variant="caption" color="textSecondary">
                         {new Date(message.timestamp).toLocaleString('en-US')}
@@ -322,7 +322,7 @@ export default function SessionDetail() {
             </Box>
           ) : (
             <Alert severity="info">
-              此會話暫無對話內容記錄
+              This session has no conversation content recorded
             </Alert>
           )}
         </CardContent>
@@ -332,20 +332,20 @@ export default function SessionDetail() {
       <Card sx={{ mt: 3 }}>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">調試資訊</Typography>
+            <Typography variant="h6">Debug Information</Typography>
             <Button
               size="small"
               onClick={() => setDebugMode(!debugMode)}
               variant={debugMode ? 'contained' : 'outlined'}
             >
-              {debugMode ? '隱藏' : '顯示'} 原始數據
+              {debugMode ? 'Hide' : 'Show'} Raw Data
             </Button>
           </Box>
 
           {debugMode && (
             <Paper elevation={1} sx={{ p: 2, backgroundColor: 'grey.100' }}>
               <Typography variant="body2" gutterBottom>
-                原始會話數據:
+                Raw Session Data:
               </Typography>
               <Box
                 component="pre"
@@ -364,7 +364,7 @@ export default function SessionDetail() {
           )}
 
           <Typography variant="caption" color="textSecondary" display="block" mt={1}>
-            請打開瀏覽器開發者工具查看詳細的API調用日誌
+            Please open browser developer tools to view detailed API call logs
           </Typography>
         </CardContent>
       </Card>
@@ -376,11 +376,11 @@ export default function SessionDetail() {
           startIcon={<ArrowBackIcon />}
           onClick={handleBackToHistory}
         >
-          返回會話歷史
+          Back to Session History
         </Button>
 
         <Typography variant="caption" color="textSecondary">
-          會話ID: {session.id}
+          Session ID: {session.id}
         </Typography>
       </Box>
     </Box>
