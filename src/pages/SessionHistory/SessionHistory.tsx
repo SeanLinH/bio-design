@@ -38,6 +38,7 @@ interface SessionRecord {
   id: string;
   userId: string;
   createdAt: string;
+  lastUpdateTime?: string;
   question?: string;
   status: 'active' | 'completed' | 'failed';
   participantCount?: number;
@@ -249,6 +250,7 @@ export default function SessionHistory() {
                   <TableCell>Session ID</TableCell>
                   <TableCell>User ID</TableCell>
                   <TableCell>Created Time</TableCell>
+                  <TableCell>Last Update Time</TableCell>
                   <TableCell>Question</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Participants</TableCell>
@@ -258,7 +260,7 @@ export default function SessionHistory() {
               <TableBody>
                 {sessions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       <Typography color="textSecondary">
                         No session records
                       </Typography>
@@ -274,7 +276,37 @@ export default function SessionHistory() {
                       </TableCell>
                       <TableCell>{session.userId}</TableCell>
                       <TableCell>
-                        {new Date(session.createdAt).toLocaleString('en-US')}
+                        {new Date(session.createdAt).toLocaleString('en-US', {
+                          timeZone: 'Asia/Taipei',
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit'
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        {session.lastUpdateTime ?
+                          new Date(session.lastUpdateTime).toLocaleString('en-US', {
+                            timeZone: 'Asia/Taipei',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          }) :
+                          new Date(session.createdAt).toLocaleString('en-US', {
+                            timeZone: 'Asia/Taipei',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          })
+                        }
                       </TableCell>
                       <TableCell>
                         <Typography

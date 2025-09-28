@@ -838,23 +838,43 @@ class ApiService {
         return this.getMockSessionHistory();
       }
 
-      // Sort sessions by creation date DESC (newest first)
+      // Sort sessions by lastUpdateTime DESC (newest first), fallback to creation date
       const sortedSessions = sessions.sort((a: any, b: any) => {
-        const dateA = new Date(a.created_at || a.createdAt || a.timestamp || 0);
-        const dateB = new Date(b.created_at || b.createdAt || b.timestamp || 0);
-        return dateB.getTime() - dateA.getTime();
+        const lastUpdateA = new Date(a.last_update_time || a.lastUpdateTime || a.updated_at || a.updatedAt || a.created_at || a.createdAt || a.timestamp || 0);
+        const lastUpdateB = new Date(b.last_update_time || b.lastUpdateTime || b.updated_at || b.updatedAt || b.created_at || b.createdAt || b.timestamp || 0);
+        return lastUpdateB.getTime() - lastUpdateA.getTime();
       });
 
-      // Apply pagination (10 sessions per page as specified)
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedSessions = sortedSessions.slice(startIndex, endIndex);
+      // Limit to exactly 10 sessions as requested
+      const limitedSessions = sortedSessions.slice(0, 10);
+
+      // Helper function to convert Unix timestamp to ISO string
+      const convertTimestamp = (timestamp: any): string => {
+        if (!timestamp) return new Date().toISOString();
+
+        // If it's already a valid ISO string, return it
+        if (typeof timestamp === 'string' && timestamp.includes('T')) {
+          return timestamp;
+        }
+
+        // If it's a Unix timestamp (seconds), convert to milliseconds
+        if (typeof timestamp === 'number') {
+          // Unix timestamps are typically 10 digits (seconds) or 13 digits (milliseconds)
+          const timestampMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+          return new Date(timestampMs).toISOString();
+        }
+
+        // Try to parse as Date
+        const date = new Date(timestamp);
+        return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+      };
 
       // Transform sessions to match our interface
-      const transformedSessions = paginatedSessions.map((session: any) => ({
+      const transformedSessions = limitedSessions.map((session: any) => ({
         id: session.id || session.session_id || session._id,
         userId: session.user_id || session.userId || userId,
-        createdAt: session.created_at || session.createdAt || session.timestamp || new Date().toISOString(),
+        createdAt: convertTimestamp(session.created_at || session.createdAt || session.timestamp),
+        lastUpdateTime: convertTimestamp(session.lastUpdateTime || session.last_update_time || session.updated_at || session.updatedAt || session.created_at || session.createdAt || session.timestamp),
         question: session.initial_message || session.question || session.prompt || session.input || '未知問題',
         status: session.status || 'completed',
         participantCount: session.participant_count || session.participantCount || 0,
@@ -893,11 +913,13 @@ class ApiService {
 
   // Helper method for mock session history
   private getMockSessionHistory(): any[] {
+    const now = Date.now();
     return [
       {
         id: 'mock_session_001',
         userId: 'user1',
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(now - 172800000).toISOString(),
+        lastUpdateTime: new Date(now - 3600000).toISOString(), // 1 hour ago
         question: '分析醫療供應鏈風險 (測試數據)',
         status: 'completed',
         participantCount: 5,
@@ -905,7 +927,8 @@ class ApiService {
       {
         id: 'mock_session_002',
         userId: 'user1',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        createdAt: new Date(now - 259200000).toISOString(),
+        lastUpdateTime: new Date(now - 7200000).toISOString(), // 2 hours ago
         question: '預測藥品短缺風險 (測試數據)',
         status: 'active',
         participantCount: 5,
@@ -913,12 +936,31 @@ class ApiService {
       {
         id: 'mock_session_003',
         userId: 'user1',
-        createdAt: new Date(Date.now() - 172800000).toISOString(),
+        createdAt: new Date(now - 345600000).toISOString(),
+        lastUpdateTime: new Date(now - 86400000).toISOString(), // 1 day ago
         question: '庫存管理優化建議 (測試數據)',
         status: 'completed',
         participantCount: 5,
+      },
+      {
+        id: 'mock_session_004',
+        userId: 'user1',
+        createdAt: new Date(now - 432000000).toISOString(),
+        lastUpdateTime: new Date(now - 172800000).toISOString(), // 2 days ago
+        question: '醫療器材供應鏈分析 (測試數據)',
+        status: 'completed',
+        participantCount: 4,
+      },
+      {
+        id: 'mock_session_005',
+        userId: 'user1',
+        createdAt: new Date(now - 518400000).toISOString(),
+        lastUpdateTime: new Date(now - 259200000).toISOString(), // 3 days ago
+        question: '藥品短缺預警系統 (測試數據)',
+        status: 'failed',
+        participantCount: 5,
       }
-    ];
+    ].slice(0, 10); // Ensure max 10 sessions
   }
 
   // Get the 5 core expert agents dynamically by name
