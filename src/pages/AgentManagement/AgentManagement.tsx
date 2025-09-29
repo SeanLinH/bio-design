@@ -53,8 +53,26 @@ export default function AgentManagement() {
     max_tokens: 131072,
   });
 
-  // Get editable agent IDs - core experts and reporter
-  const editableAgentIds = [131, 132, 133, 134, 135, 137]; // Core experts + reporter
+  // Helper function to check if an agent is editable
+  const isAgentEditable = (agent: DebateAgent) => {
+    // Core experts (always editable)
+    const coreExpertIds = [131, 132, 133, 134, 135];
+    // Reporter (always editable, but with restrictions)
+    const reporterId = 137;
+    // Fixed agents that should never be editable
+    const fixedAgentIds = [136, 138, 139, 140, 141];
+
+    if (coreExpertIds.includes(agent.id!) || agent.id === reporterId) {
+      return true;
+    }
+
+    // Custom agents are editable if they're not in the fixed agents list
+    if (!fixedAgentIds.includes(agent.id!)) {
+      return true;
+    }
+
+    return false;
+  };
 
   // Fetch agents
   const { data: agents = [], isLoading, error } = useQuery('agents', ApiService.getAgents);
@@ -266,7 +284,7 @@ export default function AgentManagement() {
           return !fixedAgentIds.includes(agent.id!);
         }).map((agent: DebateAgent) => {
           const agentType = getAgentType(agent);
-          const isEditable = editableAgentIds.includes(agent.id!);
+          const isEditable = isAgentEditable(agent);
           const isDeletable = !['reporter', 'debate_process'].includes(agent.name) &&
                              !['supply_chain', 'materials_manager', 'logistics_expert', 'risk_management', 'regulatory_authority'].includes(agent.name);
 
