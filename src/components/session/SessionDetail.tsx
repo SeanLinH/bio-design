@@ -187,6 +187,59 @@ export default function SessionDetail() {
 
   const session: SessionDetailData = sessionData;
 
+  // Calculate actual number of participating experts from messages
+  const getActualExpertCount = (): number => {
+    if (!session.messages || session.messages.length === 0) {
+      return 0;
+    }
+
+    // Get unique agent IDs from assistant messages (exclude user messages)
+    const uniqueAgents = new Set(
+      session.messages
+        .filter(msg => msg.role === 'assistant' && msg.agentId)
+        .map(msg => msg.agentId)
+    );
+
+    return uniqueAgents.size;
+  };
+
+  const actualExpertCount = getActualExpertCount();
+
+  // Helper function to format timestamp (handles both Unix timestamps and ISO strings)
+  const formatTimestamp = (timestamp: string | number): string => {
+    try {
+      let date: Date;
+
+      if (typeof timestamp === 'number') {
+        // Handle Unix timestamp (in seconds or milliseconds)
+        const timestampMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+        date = new Date(timestampMs);
+      } else {
+        // Handle ISO string
+        date = new Date(timestamp);
+      }
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid timestamp';
+      }
+
+      return date.toLocaleString('en-US', {
+        timeZone: 'Asia/Taipei',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+    } catch (error) {
+      console.error('Error formatting timestamp:', timestamp, error);
+      return 'Invalid timestamp';
+    }
+  };
+
   return (
     <Box>
       {/* Header with back button */}
@@ -242,7 +295,7 @@ export default function SessionDetail() {
                 Participating Experts
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                {session.participantCount || 0} experts
+                {actualExpertCount} {actualExpertCount === 1 ? 'expert' : 'experts'}
               </Typography>
             </Grid>
 
@@ -291,7 +344,7 @@ export default function SessionDetail() {
                         {message.role === 'user' ? 'User' : getAgentDisplayName(message.agentId)}
                       </Typography>
                       <Typography variant="caption" color="textSecondary">
-                        {new Date(message.timestamp).toLocaleString('en-US')}
+                        {formatTimestamp(message.timestamp)}
                       </Typography>
                     </Box>
                   </Box>

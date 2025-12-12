@@ -739,7 +739,10 @@ class ApiService {
       // Handle timestamp (convert numeric to ISO string if needed)
       let timestamp = msg.timestamp || msg.created_at || msg.createdAt || msg.time || Date.now();
       if (typeof timestamp === 'number') {
-        timestamp = new Date(timestamp).toISOString();
+        // Unix timestamps are typically in seconds (10 digits) or milliseconds (13 digits)
+        // If it's a small number (< 10 billion), it's likely in seconds, so multiply by 1000
+        const timestampMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+        timestamp = new Date(timestampMs).toISOString();
       } else if (typeof timestamp !== 'string') {
         timestamp = new Date().toISOString();
       }

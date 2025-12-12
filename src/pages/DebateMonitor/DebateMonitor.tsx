@@ -85,14 +85,14 @@ export default function DebateMonitor() {
     userId: string;
   } | null;
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom when new messages arrive or partial messages update
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, partialMessages]);
 
   // Start debate when component mounts
   useEffect(() => {
@@ -371,7 +371,7 @@ export default function DebateMonitor() {
           沒有會話資料，請回到設定頁面重新開始辯論
         </Alert>
         <Button onClick={() => navigate('/setup')} sx={{ mt: 2 }}>
-          回到設定頁面
+          Go to Setup Page
         </Button>
       </Box>
     );
@@ -381,7 +381,7 @@ export default function DebateMonitor() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
-          實時監控
+          Real-Time Monitor
         </Typography>
         <Box>
           <IconButton onClick={handleExport} disabled={messages.length === 0}>
@@ -406,7 +406,7 @@ export default function DebateMonitor() {
               startIcon={<RefreshIcon />}
               onClick={() => navigate('/setup')}
             >
-              重新開始
+              Restart
             </Button>
           )}
         </Box>
@@ -418,12 +418,12 @@ export default function DebateMonitor() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                辯論狀態
+                Debate Status
               </Typography>
 
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                  當前狀態
+                  Current Status
                 </Typography>
                 <Chip
                   label={
@@ -447,7 +447,7 @@ export default function DebateMonitor() {
               {currentAgent && (
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    當前發言者
+                    Current Speaker
                   </Typography>
                   <Chip label={currentAgent} color="primary" />
                 </Box>
@@ -455,7 +455,7 @@ export default function DebateMonitor() {
 
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  進度: {iteration} / {sessionData.maxIterations} 輪
+                  progress: {iteration} / {sessionData.maxIterations} 輪
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -467,7 +467,7 @@ export default function DebateMonitor() {
               <Divider sx={{ my: 2 }} />
 
               <Typography variant="body2" color="text.secondary">
-                辯論問題
+                Question
               </Typography>
               <Typography variant="body1">
                 {sessionData.question}
@@ -487,10 +487,10 @@ export default function DebateMonitor() {
           <Card sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ pb: 1 }}>
               <Typography variant="h6">
-                辯論記錄 ({messages.length + partialMessages.size})
+                Debate Records ({messages.length + partialMessages.size})
                 {partialMessages.size > 0 && (
                   <Chip
-                    label={`${partialMessages.size} 位Agent正在輸入`}
+                    label={`${partialMessages.size} Agents are typing`}
                     size="small"
                     color="primary"
                     sx={{ ml: 1 }}
@@ -584,7 +584,7 @@ export default function DebateMonitor() {
                         <Box>
                           <Typography variant="subtitle2">
                             {message.agent_name}
-                            <Chip label="正在輸入..." size="small" color="primary" sx={{ ml: 1 }} />
+                            <Chip label="Typing..." size="small" color="primary" sx={{ ml: 1 }} />
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {new Date(message.timestamp).toLocaleTimeString()}
