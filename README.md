@@ -57,7 +57,8 @@ bio-design/
 │   │   └── ...
 │   └── docs/            # API and setup documentation
 ├── static/
-│   └── index.html       # Web UI interface
+│   ├── index.html                    # Basic Web UI interface
+│   └── need_statement_debate.html   # 🆕 Need Statement Debate System Frontend
 ├── experiments/         # Jupyter notebooks and experiments
 ├── tests/              # Test files
 ├── run.py          # FastAPI server
@@ -118,6 +119,67 @@ python run.py
 ```
 
 The service will be available at `http://localhost:8000`
+
+## 🎨 Frontend Interface Showcase
+
+### 🆕 Need Statement Debate System
+
+We provide a specialized frontend interface that allows users to easily input medical needs and watch multi-agent debate processes in real-time:
+
+#### ✨ Key Features
+
+- **📝 Intuitive Input**: Large text input area supporting multi-line Need Statement input
+- **🎯 Intelligent Debate**: Multi-agent collaborative debate including Medical Expert, Systems Engineer, and Needs Collector
+- **📊 Real-time Display**: Three view modes: Debate Process, Debate Results, and Needs Summary
+- **⚡ Progress Tracking**: Real-time progress bar and status indicators
+- **📱 Responsive Design**: Support for desktop and mobile devices
+
+#### 🖼️ Interface Screenshot
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                🦷 Need Statement Debate System                  │
+│            LLM Agent-based Biodesign Methodology               │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐  ┌─────────────────────────────────────────┐
+│   📝 Input Panel│  │        🤖 Debate Display Panel          │
+│                 │  │                                         │
+│ Need Statement: │  │  🩺 Medical Expert Agent                │
+│ [Enter your     │  │  From a medical perspective, this need  │
+│  medical need   │  │  involves...                            │
+│  description...]│  │                                         │
+│                 │  │  ⚙️ Systems Engineer Agent              │
+│ Debate Rounds:  │  │  From a technical perspective, this     │
+│ [3 rounds]      │  │  need requires...                       │
+│                 │  │                                         │
+│ 🚀 Start Debate │  │  📋 Needs Collector Agent               │
+│   Analysis      │  │  Based on both experts' analysis, I     │
+│                 │  │  identify...                            │
+│ 💡 Example      │  │                                         │
+│   Needs:        │  │  📊 Progress: ████████████████████ 100% │
+│ • Diabetes      │  │                                         │
+│ • Dental        │  │  [Debate Process] [Results] [Summary]   │
+│ • Elderly Care  │  │                                         │
+└─────────────────┘  └─────────────────────────────────────────┘
+```
+
+#### 🚀 Quick Experience
+
+1. After starting the server, visit: `http://localhost:8000/static/need_statement_debate.html`
+2. Enter your medical need description on the left side
+3. Select debate rounds (2-5 rounds)
+4. Click "Start Debate Analysis" button
+5. Watch multi-agent debate process in real-time
+6. Switch between different views to see analysis results
+
+#### 🎭 Debate Agent Roles
+
+- **🩺 Medical Expert Agent**: Analyzes needs from clinical medical perspective
+- **⚙️ Systems Engineer Agent**: Evaluates feasibility from technical engineering perspective
+- **📋 Needs Collector Agent**: Integrates discussion results and forms actionable recommendations
+
+---
 
 ## 🖥️ Web User Interface
 

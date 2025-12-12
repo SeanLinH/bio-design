@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Need Statement 辯論系統 - Biodesign LLM Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .input-panel {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .debate-panel {
+            background: white;
+            padding: 30px;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-indicator {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-indicator.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-indicator.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-indicator.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .debate-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .debate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .debate-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .debate-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .control-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .debate-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .debate-message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .debate-message.medical {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid #2196f3;
+        }
+
+        .debate-message.engineering {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-left: 5px solid #9c27b0;
+        }
+
+        .debate-message.coordinator {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-left: 5px solid #4caf50;
+        }
+
+        .debate-message.system {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left: 5px solid #ff9800;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+
+        .message-time {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .message-content {
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-summary {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #4caf50;
+        }
+
+        .results-summary h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .need-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .need-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .need-item p {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #95a5a6;
+        }
+
+        .empty-state p {
+            line-height: 1.6;
+        }
+
+        .example-needs {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .example-needs h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .example-need {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .example-need:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-panel {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦷 Need Statement 辯論系統</h1>
+            <p>基於LLM代理的Biodesign方法論 - 多代理協作辯論分析</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 輸入面板 -->
+            <div class="input-panel">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📝 輸入您的 Need Statement</h3>
+                
+                <div class="form-group">
+                    <label for="needStatement">Need Statement:</label>
+                    <textarea 
+                        id="needStatement" 
+                        placeholder="請描述您識別出的醫療需求或問題...&#10;&#10;例如：&#10;糖尿病患者需要更好的血糖監測設備，包括連續監測和智能提醒功能"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="maxRounds">辯論輪數:</label>
+                    <select id="maxRounds">
+                        <option value="2">2 輪 (快速分析)</option>
+                        <option value="3" selected>3 輪 (標準分析)</option>
+                        <option value="4">4 輪 (深度分析)</option>
+                        <option value="5">5 輪 (全面分析)</option>
+                    </select>
+                </div>
+
+                <button id="startDebateBtn" class="submit-btn" onclick="startDebate()">
+                    🚀 開始辯論分析
+                </button>
+
+                <div id="statusIndicator" class="status-indicator"></div>
+
+                <div class="example-needs">
+                    <h4>💡 示例 Need Statements:</h4>
+                    <div class="example-need" onclick="loadExample('diabetes')">
+                        <strong>糖尿病管理:</strong> 患者需要更好的血糖監測和用藥提醒系統
+                    </div>
+                    <div class="example-need" onclick="loadExample('dental')">
+                        <strong>牙科手術:</strong> 需要3D建模和VR模擬來提升手術前規劃
+                    </div>
+                    <div class="example-need" onclick="loadExample('elderly')">
+                        <strong>老年照護:</strong> 獨居老人需要智能監測和緊急求助系統
+                    </div>
+                </div>
+            </div>
+
+            <!-- 辯論展示面板 -->
+            <div class="debate-panel">
+                <div class="debate-container">
+                    <div class="debate-header">
+                        <div class="debate-title">🤖 多代理辯論過程</div>
+                        <div class="debate-controls">
+                            <button class="control-btn active" onclick="showView('debate')">辯論過程</button>
+                            <button class="control-btn" onclick="showView('results')">辯論結果</button>
+                            <button class="control-btn" onclick="showView('summary')">需求總結</button>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+
+                    <!-- 辯論過程視圖 -->
+                    <div id="debateView" class="debate-content">
+                        <div class="empty-state">
+                            <h3>🎯 準備開始辯論</h3>
+                            <p>請在左側輸入您的 Need Statement，然後點擊「開始辯論分析」按鈕。</p>
+                            <p>系統將啟動多個AI代理進行協作辯論，分析您的需求並提出解決方案。</p>
+                        </div>
+                    </div>
+
+                    <!-- 辯論結果視圖 -->
+                    <div id="resultsView" class="debate-content" style="display: none;">
+                        <div class="empty-state">
+                            <h3>📊 辯論結果</h3>
+                            <p>辯論完成後，這裡將顯示詳細的分析結果和建議。</p>
+                        </div>
+                    </div>
+
+                    <!-- 需求總結視圖 -->
+                    <div id="summaryView" class="debate-content" style="display: none;">
+                        <div class="empty-state">
+                            <h3>📋 需求總結</h3>
+                            <p>辯論完成後，這裡將顯示識別出的關鍵需求和實施建議。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let debateMessages = [];
+        let debateResults = null;
+        let currentView = 'debate';
+
+        // 載入示例
+        function loadExample(type) {
+            const examples = {
+                diabetes: '糖尿病患者需要更好的血糖監測設備，包括連續監測、智能提醒功能和數據分析，以提升自我管理能力和治療效果。',
+                dental: '牙科醫師需要3D建模和VR模擬系統來進行手術前規劃，提升手術精準度、患者溝通效果和手術成功率。',
+                elderly: '獨居老人需要智能健康監測系統，包括生命體徵監測、跌倒檢測、緊急求助和遠程照護功能，以提升居家安全性。'
+            };
+            
+            document.getElementById('needStatement').value = examples[type];
+        }
+
+        // 開始辯論
+        async function startDebate() {
+            const needStatement = document.getElementById('needStatement').value.trim();
+            const maxRounds = document.getElementById('maxRounds').value;
+            
+            if (!needStatement) {
+                showStatus('請輸入 Need Statement', 'error');
+                return;
+            }
+
+            // 重置狀態
+            resetDebate();
+            showStatus('正在啟動辯論系統...', 'loading');
+            
+            try {
+                // 提交辯論請求
+                const response = await fetch('/api/reflection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: needStatement,
+                        max_rounds: parseInt(maxRounds)
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentSessionId = data.session_id;
+                    showStatus('辯論已啟動，正在等待代理回應...', 'loading');
+                    
+                    // 開始監聽辯論過程
+                    startDebateStream();
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`辯論啟動失敗: ${errorData.detail || '未知錯誤'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`連接錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        // 重置辯論狀態
+        function resetDebate() {
+            debateMessages = [];
+            debateResults = null;
+            currentSessionId = null;
+            updateDebateView();
+            updateProgress(0);
+        }
+
+        // 開始辯論串流
+        function startDebateStream() {
+            if (!currentSessionId) return;
+
+            // 模擬辯論過程（實際應該使用 Server-Sent Events）
+            simulateDebateProcess();
+        }
+
+        // 模擬辯論過程
+        function simulateDebateProcess() {
+            const needStatement = document.getElementById('needStatement').value;
+            const maxRounds = parseInt(document.getElementById('maxRounds').value);
+            
+            // 清空現有消息
+            debateMessages = [];
+            updateDebateView();
+
+            // 模擬辯論開始
+            addDebateMessage('system', '🎯 辯論開始', `開始分析 Need Statement: "${needStatement}"`, 'system');
+            updateProgress(10);
+
+            // 模擬第一輪辯論
+            setTimeout(() => {
+                addDebateMessage('medical', '🩺 醫療專家代理', '從醫療角度分析，這個需求涉及患者安全、治療效果和醫療流程優化。我建議從臨床價值和患者影響兩個維度進行評估。', 'medical');
+                updateProgress(25);
+            }, 2000);
+
+            setTimeout(() => {
+                addDebateMessage('engineering', '⚙️ 系統工程師代理', '從技術角度來看，這個需求需要整合多種技術，包括感測器、數據處理、用戶界面等。我建議採用模組化設計，確保系統的可擴展性和維護性。', 'engineering');
+                updateProgress(40);
+            }, 4000);
+
+            setTimeout(() => {
+                addDebateMessage('coordinator', '📋 需求收集者代理', '基於兩位專家的分析，我識別出三個關鍵需求：1) 核心功能系統 2) 數據分析平台 3) 用戶體驗優化。讓我們深入討論每個需求的實施策略。', 'coordinator');
+                updateProgress(55);
+            }, 6000);
+
+            // 模擬第二輪辯論
+            setTimeout(() => {
+                addDebateMessage('medical', '🩺 醫療專家代理', '針對識別出的需求，我認為應該優先考慮患者安全性。建議建立風險評估機制和應急處理流程。', 'medical');
+                updateProgress(70);
+            }, 8000);
+
+            setTimeout(() => {
+                addDebateMessage('engineering', '⚙️ 系統工程師代理', '從技術實施角度，我建議採用敏捷開發方法，分階段部署。首先建立核心功能，然後逐步添加高級特性。', 'engineering');
+                updateProgress(85);
+            }, 10000);
+
+            // 辯論完成
+            setTimeout(() => {
+                addDebateMessage('coordinator', '📋 需求收集者代理', '辯論完成！我已經整合了所有討論結果，形成了詳細的需求分析和實施建議。', 'coordinator');
+                updateProgress(100);
+                showStatus('辯論完成！', 'success');
+                
+                // 生成模擬結果
+                generateMockResults();
+            }, 12000);
+        }
+
+        // 添加辯論消息
+        function addDebateMessage(agentType, agentName, content, messageType) {
+            const message = {
+                agentType,
+                agentName,
+                content,
+                messageType,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            debateMessages.push(message);
+            updateDebateView();
+        }
+
+        // 更新辯論視圖
+        function updateDebateView() {
+            const debateView = document.getElementById('debateView');
+            
+            if (debateMessages.length === 0) {
+                debateView.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🎯 準備開始辯論</h3>
+                        <p>請在左側輸入您的 Need Statement，然後點擊「開始辯論分析」按鈕。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let messagesHTML = '';
+            debateMessages.forEach(message => {
+                const messageClass = `debate-message ${message.messageType}`;
+                messagesHTML += `
+                    <div class="${messageClass}">
+                        <div class="message-header">
+                            <span class="agent-name">${message.agentName}</span>
+                            <span class="message-time">${message.timestamp}</span>
+                        </div>
+                        <div class="message-content">${message.content}</div>
+                    </div>
+                `;
+            });
+
+            debateView.innerHTML = messagesHTML;
+            debateView.scrollTop = debateView.scrollHeight;
+        }
+
+        // 更新進度條
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        // 生成模擬結果
+        function generateMockResults() {
+            debateResults = {
+                needs: [
+                    {
+                        title: '核心功能系統',
+                        description: '建立基礎的監測和提醒功能',
+                        priority: '高',
+                        feasibility: '8/10',
+                        impact: '9/10'
+                    },
+                    {
+                        title: '數據分析平台',
+                        description: '整合數據收集、分析和報告功能',
+                        priority: '中',
+                        feasibility: '7/10',
+                        impact: '8/10'
+                    },
+                    {
+                        title: '用戶體驗優化',
+                        description: '優化界面設計和用戶交互流程',
+                        priority: '中',
+                        feasibility: '8/10',
+                        impact: '7/10'
+                    }
+                ],
+                summary: '通過多代理辯論，我們成功識別出三個關鍵需求，並制定了分階段實施策略。建議優先實施核心功能系統，以快速獲得用戶反饋。'
+            };
+        }
+
+        // 顯示狀態
+        function showStatus(message, type) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = message;
+            indicator.className = `status-indicator ${type}`;
+            indicator.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // 切換視圖
+        function showView(viewName) {
+            currentView = viewName;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 隱藏所有視圖
+            document.getElementById('debateView').style.display = 'none';
+            document.getElementById('resultsView').style.display = 'none';
+            document.getElementById('summaryView').style.display = 'none';
+            
+            // 顯示選中的視圖
+            document.getElementById(viewName + 'View').style.display = 'block';
+            
+            // 根據視圖更新內容
+            if (viewName === 'results') {
+                updateResultsView();
+            } else if (viewName === 'summary') {
+                updateSummaryView();
+            }
+        }
+
+        // 更新結果視圖
+        function updateResultsView() {
+            const resultsView = document.getElementById('resultsView');
+            
+            if (!debateResults) {
+                resultsView.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊 辯論結果</h3>
+                        <p>請先完成辯論分析以查看結果。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let resultsHTML = `
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📊 辯論分析結果</h3>
+                <div class="results-summary">
+                    <h3>📋 識別出的需求</h3>
+            `;
+
+            debateResults.needs.forEach((need, index) => {
+                resultsHTML += `
+                    <div class="need-item">
+                        <h4>${index + 1}. ${need.title}</h4>
+                        <p><strong>描述:</strong> ${need.description}</p>
+                        <p><strong>優先級:</strong> ${need.priority}</p>
+                        <p><strong>可行性:</strong> ${need.feasibility}</p>
+                        <p><strong>影響力:</strong> ${need.impact}</p>
+                    </div>
+                `;
+            });
+
+            resultsHTML += `
+                    <h3 style="margin-top: 20px;">📝 總結</h3>
+                    <p>${debateResults.summary}</p>
+                </div>
+            `;
+
+            resultsView.innerHTML = resultsHTML;
+        }
+
+        // 更新總結視圖
+        function updateSummaryView() {
+            const summaryView = document.getElementById('summaryView');
+            
+            if (!debateResults) {
+                summaryView.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📋 需求總結</h3>
+                        <p>請先完成辯論分析以查看總結。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let summaryHTML = `
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">📋 需求總結與實施建議</h3>
+                <div class="results-summary">
+                    <h3>🎯 實施優先級</h3>
+                    <p>基於辯論結果，建議按以下順序實施：</p>
+                    <ol style="margin: 15px 0; padding-left: 20px;">
+                        <li><strong>第一階段 (1-3個月):</strong> 核心功能系統開發與測試</li>
+                        <li><strong>第二階段 (4-6個月):</strong> 數據分析平台整合</li>
+                        <li><strong>第三階段 (7-9個月):</strong> 用戶體驗優化與部署</li>
+                    </ol>
+                    
+                    <h3>💡 關鍵成功因素</h3>
+                    <ul style="margin: 15px 0; padding-left: 20px;">
+                        <li>用戶需求導向的設計</li>
+                        <li>分階段實施策略</li>
+                        <li>持續的用戶反饋收集</li>
+                        <li>跨專業團隊協作</li>
+                    </ul>
+                    
+                    <h3>⚠️ 風險管理</h3>
+                    <ul style="margin: 15px 0; padding-left: 20px;">
+                        <li>技術風險：選擇成熟技術，建立備選方案</li>
+                        <li>用戶接受度：加強培訓與支持</li>
+                        <li>監管合規：與相關機構保持溝通</li>
+                    </ul>
+                </div>
+            `;
+
+            summaryView.innerHTML = summaryHTML;
+        }
+
+        // 頁面載入完成
+        window.onload = function() {
+            console.log('Need Statement 辯論系統已載入');
+        };
+    </script>
+</body>
+</html> 
