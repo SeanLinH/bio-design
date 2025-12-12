@@ -54,7 +54,7 @@ export default function SessionHistory() {
   const [newSessionUserId, setNewSessionUserId] = useState('user1');
 
   // Get session history records - using actual API endpoint (CLAUDE.md #9)
-  const { data: sessions = [], isLoading, error, refetch } = useQuery(
+  const { data: sessionData, isLoading, error, refetch } = useQuery(
     ['sessionHistory', page, pageSize],
     () => ApiService.getSessionHistory(page, pageSize, 'user1'),
     {
@@ -67,6 +67,11 @@ export default function SessionHistory() {
       }
     }
   );
+
+  // Extract sessions array and total count from paginated response
+  const sessions = sessionData?.sessions || [];
+  const totalSessions = sessionData?.total || 0;
+  const totalPages = Math.ceil(totalSessions / pageSize);
 
   // Mutation for creating new session
   const createSessionMutation = useMutation(
@@ -194,7 +199,7 @@ export default function SessionHistory() {
                 Total Sessions
               </Typography>
               <Typography variant="h4" component="h2" color="primary">
-                {sessions.length || 0}
+                {totalSessions || 0}
               </Typography>
             </CardContent>
           </Card>
@@ -249,9 +254,7 @@ export default function SessionHistory() {
                 <TableRow>
                   <TableCell>Session ID</TableCell>
                   <TableCell>User ID</TableCell>
-                  <TableCell>Created Time</TableCell>
                   <TableCell>Last Update Time</TableCell>
-                  <TableCell>Question</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Participants</TableCell>
                   <TableCell>Actions</TableCell>
@@ -260,7 +263,7 @@ export default function SessionHistory() {
               <TableBody>
                 {sessions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={6} align="center">
                       <Typography color="textSecondary">
                         No session records
                       </Typography>
@@ -275,17 +278,6 @@ export default function SessionHistory() {
                         </Typography>
                       </TableCell>
                       <TableCell>{session.userId}</TableCell>
-                      <TableCell>
-                        {new Date(session.createdAt).toLocaleString('en-US', {
-                          timeZone: 'Asia/Taipei',
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit'
-                        })}
-                      </TableCell>
                       <TableCell>
                         {session.lastUpdateTime ?
                           new Date(session.lastUpdateTime).toLocaleString('en-US', {
@@ -307,19 +299,6 @@ export default function SessionHistory() {
                             second: '2-digit'
                           })
                         }
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            maxWidth: 200,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {session.question || 'Not set'}
-                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -353,13 +332,18 @@ export default function SessionHistory() {
           </TableContainer>
 
           {/* Pagination */}
-          {sessions.length > 0 && (
-            <Box display="flex" justifyContent="center" mt={3}>
+          {sessions.length > 0 && totalPages > 1 && (
+            <Box display="flex" justifyContent="space-between" alignItems="center" mt={3}>
+              <Typography variant="body2" color="textSecondary">
+                Showing {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, totalSessions)} of {totalSessions} sessions
+              </Typography>
               <Pagination
-                count={Math.ceil(sessions.length / pageSize)}
+                count={totalPages}
                 page={page}
                 onChange={(_, newPage) => setPage(newPage)}
                 color="primary"
+                showFirstButton
+                showLastButton
               />
             </Box>
           )}

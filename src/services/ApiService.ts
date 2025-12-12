@@ -800,15 +800,24 @@ class ApiService {
   }
 
   // Get session history from real API endpoint (CLAUDE.md #9)
-  async getSessionHistory(page: number = 1, pageSize: number = 10, userId: string = 'user1'): Promise<any[]> {
+  async getSessionHistory(page: number = 1, pageSize: number = 10, userId: string = 'user1'): Promise<{ sessions: any[], total: number }> {
     console.log('🔍 [DEBUG] getSessionHistory called with:', { page, pageSize, userId });
 
     try {
       // Use correct API endpoint from CLAUDE.md: GET /spaces/13/apps/12/users/user1/sessions
+      // Add pagination query parameters
       const apiUrl = `/spaces/${FIXED_SPACE_ID}/apps/${FIXED_APP_ID}/users/${userId}/sessions`;
       console.log('🔍 [DEBUG] Fetching sessions from API URL:', apiUrl);
 
-      const response = await apiClient.get(apiUrl);
+      // Send pagination parameters as query params
+      const response = await apiClient.get(apiUrl, {
+        params: {
+          page: page,
+          page_size: pageSize,
+          limit: pageSize,  // Some APIs use 'limit' instead
+          offset: (page - 1) * pageSize  // Some APIs use offset-based pagination
+        }
+      });
 
       console.log('🔍 [DEBUG] Raw session history response:', {
         status: response.status,
@@ -835,7 +844,11 @@ class ApiService {
 
       if (!Array.isArray(sessions)) {
         console.log('🔍 [DEBUG] Sessions is not an array, falling back to mock data');
-        return this.getMockSessionHistory();
+        const mockSessions = this.getMockSessionHistory();
+        return {
+          sessions: mockSessions,
+          total: mockSessions.length
+        };
       }
 
       // Sort sessions by lastUpdateTime DESC (newest first), fallback to creation date
@@ -845,8 +858,12 @@ class ApiService {
         return lastUpdateB.getTime() - lastUpdateA.getTime();
       });
 
-      // Limit to exactly 10 sessions as requested
-      const limitedSessions = sortedSessions.slice(0, 10);
+      // Get total count from API response or use array length
+      const totalCount = response.data.total || response.data.count || sessions.length;
+
+      // If backend doesn't support pagination yet, implement client-side pagination
+      const isPaginatedByBackend = response.data.total !== undefined || response.data.count !== undefined;
+      const limitedSessions = isPaginatedByBackend ? sortedSessions : sortedSessions.slice((page - 1) * pageSize, page * pageSize);
 
       // Helper function to convert Unix timestamp to ISO string
       const convertTimestamp = (timestamp: any): string => {
@@ -881,7 +898,12 @@ class ApiService {
       }));
 
       console.log('🔍 [DEBUG] Final transformed sessions:', transformedSessions);
-      return transformedSessions;
+      console.log('🔍 [DEBUG] Total count:', totalCount);
+
+      return {
+        sessions: transformedSessions,
+        total: totalCount
+      };
 
     } catch (error: any) {
       console.error('❌ [ERROR] Error fetching session history from API:', error);
@@ -899,7 +921,10 @@ class ApiService {
         if (savedSessions.length > 0) {
           const startIndex = (page - 1) * pageSize;
           const endIndex = startIndex + pageSize;
-          return savedSessions.slice(startIndex, endIndex);
+          return {
+            sessions: savedSessions.slice(startIndex, endIndex),
+            total: savedSessions.length
+          };
         }
       } catch (localError) {
         console.error('❌ [ERROR] localStorage fallback failed:', localError);
@@ -907,7 +932,11 @@ class ApiService {
 
       // Final fallback to mock data
       console.log('🔍 [DEBUG] Using mock data as final fallback');
-      return this.getMockSessionHistory();
+      const mockSessions = this.getMockSessionHistory();
+      return {
+        sessions: mockSessions,
+        total: mockSessions.length
+      };
     }
   }
 

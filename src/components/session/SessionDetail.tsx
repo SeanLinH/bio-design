@@ -236,15 +236,8 @@ export default function SessionDetail() {
             <Grid item xs={12} md={6}>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <AccessTimeIcon color="primary" />
-                <Typography variant="h6">Time Information</Typography>
+                <Typography variant="h6">Session Information</Typography>
               </Box>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                Created Time
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {new Date(session.createdAt).toLocaleString('en-US')}
-              </Typography>
-
               <Typography variant="body2" color="textSecondary" gutterBottom>
                 Participating Experts
               </Typography>
